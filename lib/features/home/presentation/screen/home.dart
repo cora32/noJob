@@ -17,9 +17,25 @@ class ChartWidget extends ConsumerWidget {
 
     final chartWidget = state.when(
       data: (state) {
-        return CustomPaint(
-          size: Size(200, 200),
-          painter: ArcPainter(data: state.arcData),
+        final totalCount = state.arcDataList.isNotEmpty ? state.arcDataList
+            .first.total : 0;
+        final offerCount = state.arcDataList
+            .firstWhere((e) => e.type == ApplicationType.offer,
+            orElse: () => ArcData.empty())
+            .count;
+
+        return SizedBox(
+          width: 200,
+          height: 200,
+          child: CustomPaint(
+            painter: ArcPainter(items: state.arcDataList),
+            child: Center(
+              child: InfoPanel(
+                total: totalCount,
+                offers: offerCount,
+              ),
+            ),
+          ),
         );
       },
       error: (error, stack) {
@@ -29,55 +45,116 @@ class ChartWidget extends ConsumerWidget {
     );
 
     return Container(
-      color: Colors.black,
-      child: Center(child: chartWidget),
+      color: Colors.transparent,
+      child: Center(
+        child: Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(16)),
+          ),
+          color: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: chartWidget,
+          ),
+        ),
+      ),
     );
   }
 }
 
-class ArcPainter extends CustomPainter {
-  final ArcData data;
+class InfoPanel extends StatelessWidget {
+  final int total;
+  final int offers;
 
-  final Paint totalPaint;
-  final Paint initialInterviewsPaint;
-  final Paint techInterviewsPaint;
-  final Paint rejectedPaint;
-  final Paint rejectedWithFeedbackPaint;
-  final Paint offersPaint;
+  const InfoPanel({super.key, required this.total, required this.offers});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        RichText(
+          textAlign: TextAlign.center,
+          text: TextSpan(
+            style: const TextStyle(color: Colors.black, fontSize: 14),
+            children: [
+              TextSpan(
+                text: '$total',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const TextSpan(text: '\ntotal'),
+            ],
+          ),
+        ),
+        const SizedBox(width: 24),
+        RichText(
+          textAlign: TextAlign.center,
+          text: TextSpan(
+            style: const TextStyle(color: Colors.red, fontSize: 14),
+            children: [
+              TextSpan(
+                text: '$offers',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const TextSpan(text: '\noffers'),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+
+class InnerData {
+  final Paint paint;
+  final double startAngle;
+  final double sweepAngle;
+
+  InnerData({
+    required this.paint,
+    required this.startAngle,
+    required this.sweepAngle,
+  });
+}
+
+class ArcPainter extends CustomPainter {
+  final List<ArcData> items;
+  late List<InnerData> innerData = [];
 
   static const double strokeWidth = 22.0;
 
-  ArcPainter({required this.data})
-    : totalPaint = Paint()
-        ..color = data.total.status.color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = strokeWidth
-        ..strokeCap = StrokeCap.round,
-      initialInterviewsPaint = Paint()
-        ..color = data.initialInterviews.status.color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = strokeWidth
-        ..strokeCap = StrokeCap.round,
-      techInterviewsPaint = Paint()
-        ..color = data.technicalInterviews.status.color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = strokeWidth
-        ..strokeCap = StrokeCap.round,
-      rejectedPaint = Paint()
-        ..color = data.rejected.status.color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = strokeWidth
-        ..strokeCap = StrokeCap.round,
-      rejectedWithFeedbackPaint = Paint()
-        ..color = data.rejectedWithFeedback.status.color
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = strokeWidth
-        ..strokeCap = StrokeCap.round,
-      offersPaint = Paint()
-        ..color = data.offers.status.color
+  ArcPainter({required this.items}) {
+    innerData = [];
+
+    var lastStartAngle = -90.0;
+
+    for (var item in items) {
+      final paint = Paint()
+        ..color = item.type.color
         ..style = PaintingStyle.stroke
         ..strokeWidth = strokeWidth
         ..strokeCap = StrokeCap.round;
+
+      final sweepAngle = calcSweepAngle(count: item.count, total: item.total);
+
+      innerData.add(
+        InnerData(
+          paint: paint,
+          startAngle: lastStartAngle,
+          sweepAngle: sweepAngle,
+        ),
+      );
+
+      lastStartAngle += sweepAngle;
+    }
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -87,98 +164,15 @@ class ArcPainter extends CustomPainter {
       height: size.height,
     );
 
-    final startAngle = -90.0;
-
-    // Draw pending
-    canvas.drawArc(rect, startAngle.toRad(), 360.0.toRad(), false, totalPaint);
-
-    // Calc initial interviews
-    final initialsStartAngle = startAngle;
-    final initialsSweepAngle = calcSweepAngle(
-      count: data.initialInterviews.count,
-      total: data.total.count,
-    );
-
-    // Calc tech interviews
-    final techStartAngle = initialsStartAngle + initialsSweepAngle;
-    final techSweepAngle = calcSweepAngle(
-      count: data.technicalInterviews.count,
-      total: data.total.count,
-    );
-
-    // Calc rejected
-    final rejectedStartAngle = techStartAngle + techSweepAngle;
-    final rejectedSweepAngle = calcSweepAngle(
-      count: data.rejected.count,
-      total: data.total.count,
-    );
-
-    // Calc rejected with feedback
-    final rejectedWithFeedbackStartAngle =
-        rejectedStartAngle + rejectedSweepAngle;
-    final rejectedWithFeedbackSweepAngle = calcSweepAngle(
-      count: data.rejectedWithFeedback.count,
-      total: data.total.count,
-    );
-
-    // Calc offers
-    final offersStartAngle =
-        rejectedWithFeedbackStartAngle + rejectedWithFeedbackSweepAngle;
-    final offersSweepAngle = calcSweepAngle(
-      count: data.offers.count,
-      total: data.total.count,
-    ).toRad();
-
-    // Draw offers
-    canvas.drawArc(
-      rect,
-      offersStartAngle.toRad(),
-      offersSweepAngle.toRad(),
-      false,
-      offersPaint,
-    );
-
-    // Draw rejected with feedback
-    canvas.drawArc(
-      rect,
-      rejectedWithFeedbackStartAngle.toRad(),
-      rejectedWithFeedbackSweepAngle.toRad(),
-      false,
-      rejectedWithFeedbackPaint,
-    );
-
-    // Draw rejected
-    canvas.drawArc(
-      rect,
-      rejectedStartAngle.toRad(),
-      rejectedSweepAngle.toRad(),
-      false,
-      rejectedPaint,
-    );
-
-    // Draw tech interviews
-    canvas.drawArc(
-      rect,
-      techStartAngle.toRad(),
-      techSweepAngle.toRad(),
-      false,
-      techInterviewsPaint,
-    );
-
-    // Draw initial interviews
-    canvas.drawArc(
-      rect,
-      initialsStartAngle.toRad(),
-      initialsSweepAngle.toRad(),
-      false,
-      initialInterviewsPaint,
-    );
-
-    debugPrint(
-      "offersStartAngle: $offersStartAngle, offersSweepAngle: $offersSweepAngle",
-    );
-    debugPrint("total: ${data.total.count}, offers: ${data.offers.count}");
-    debugPrint("color: ${data.offers.status.color}");
+    for (var item in innerData.reversed) {
+      canvas.drawArc(
+        rect,
+        item.startAngle.toRad(),
+        item.sweepAngle.toRad(),
+        false,
+        item.paint,
+      );
+    }
   }
 
   double calcSweepAngle({required int count, required int total}) =>
@@ -186,7 +180,7 @@ class ArcPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return (oldDelegate as ArcPainter).data != data;
+    return (oldDelegate as ArcPainter).items != items;
   }
 }
 

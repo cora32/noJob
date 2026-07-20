@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class HomeState {
-  final ArcData arcData;
+  final List<ArcData> arcDataList;
 
-  const HomeState({required this.arcData});
+  const HomeState({required this.arcDataList});
 
-  HomeState copyWith({ArcData? arcData}) {
-    return HomeState(arcData: arcData ?? this.arcData);
+  HomeState copyWith({List<ArcData>? arcDataList}) {
+    return HomeState(arcDataList: arcDataList ?? List.empty());
   }
 }
 
@@ -19,54 +19,33 @@ class RejectedData {
 }
 
 class ArcData {
-  final ApplicationData total;
-  final ApplicationData initialInterviews;
-  final ApplicationData technicalInterviews;
-  final ApplicationData rejected;
-  final ApplicationData rejectedWithFeedback;
-  final ApplicationData offers;
+  final int total;
+  final int count;
+  final ApplicationType type;
 
   const ArcData({
     required this.total,
-    required this.initialInterviews,
-    required this.technicalInterviews,
-    required this.rejected,
-    required this.rejectedWithFeedback,
-    required this.offers,
+    required this.count,
+    required this.type,
   });
 
   ArcData.empty()
-    : total = ApplicationData.empty(),
-      initialInterviews = ApplicationData.empty(),
-      technicalInterviews = ApplicationData.empty(),
-      rejected = ApplicationData.empty(),
-      rejectedWithFeedback = ApplicationData.empty(),
-      offers = ApplicationData.empty();
+      : total = 0,
+        count = 0,
+        type = ApplicationType.unknown;
 }
 
-class ApplicationData{
-  final ApplicationStatus status;
-  final int count;
-
-  ApplicationData({required this.status, required this.count});
-
-  const ApplicationData.empty() :
-      status = ApplicationStatus.total,
-      count = 0;
-}
-
-enum ApplicationStatus {
-  total(color: Color(0xFFA6A6A6)),
-  // pending(size: 100, color: Color(0xFFFFCE93)),
+enum ApplicationType {
+  unknown(color: Color(0xFF000000)),
   initialInterviews(color: Color(0xFF19CCD2)),
   techInterviews(color: Color(0xFF0048FF)),
-  rejected(color: Color(0xFFED2727)),
-  rejectedWithFeedback(color: Color(0xFFDA5322)),
+  rejected(color: Color(0xFFE80808)),
+  rejectedDetailed(color: Color(0xFFF700FF)),
   offer( color: Color(0xFF34D61D));
 
   final Color color;
 
-  const ApplicationStatus({required this.color});
+  const ApplicationType({required this.color});
 }
 
 
@@ -75,14 +54,30 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
   Future<HomeState> build() async {
     await Future.delayed(const Duration(seconds: 1));
 
-    return HomeState(arcData: ArcData(
-      total: ApplicationData(status: ApplicationStatus.total, count: 400),
-      initialInterviews: ApplicationData(status: ApplicationStatus.initialInterviews, count: 40),
-      technicalInterviews: ApplicationData(status: ApplicationStatus.techInterviews, count: 20),
-      rejected: ApplicationData(status: ApplicationStatus.rejected, count: 80),
-      rejectedWithFeedback: ApplicationData(status: ApplicationStatus.rejectedWithFeedback, count: 12),
-      offers: ApplicationData(status: ApplicationStatus.offer, count: 50),
-    ));
+    var dataList = _getDataList();
+
+    return HomeState(arcDataList: dataList);
+  }
+
+  List<ArcData> _getDataList() {
+    var rejections = ArcData(
+        total: 500, count: 200, type: ApplicationType.rejected);
+    var rejectionsDetailed = ArcData(
+        total: 500, count: 100, type: ApplicationType.rejectedDetailed);
+    var initialInterviews = ArcData(
+        total: 500, count: 80, type: ApplicationType.initialInterviews);
+    var techInterviews = ArcData(
+        total: 500, count: 30, type: ApplicationType.techInterviews);
+    var offers = ArcData(total: 500, count: 20, type: ApplicationType.offer);
+
+    return [
+      // total,
+      rejections,
+      rejectionsDetailed,
+      initialInterviews,
+      techInterviews,
+      offers,
+    ];
   }
 }
 
