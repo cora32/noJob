@@ -1,4 +1,5 @@
-import 'package:NoJob/features/home/presentation/screen/home.dart';
+import 'package:NoJob/features/home/presentation/screen/chart_widget.dart';
+import 'package:NoJob/features/home/presentation/screen/pie_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -31,11 +32,18 @@ class ScaffoldWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          title: Text("noJob"),
-        ),
-        body: const ChartWidget()
+        body: Center(
+          child: Column(
+            verticalDirection: VerticalDirection.up,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 64),
+              const LineChartWidget(),
+              const SizedBox(height: 32),
+              const PieWidget(),
+            ],
+          ),
+        )
     );
   }
 }

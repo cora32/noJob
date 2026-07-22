@@ -1,3 +1,4 @@
+import 'package:NoJob/features/home/presentation/providers/job_repo_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -36,51 +37,56 @@ class ArcData {
 }
 
 enum ApplicationType {
-  unknown(color: Color(0xFF000000)),
-  initialInterviews(color: Color(0xFF19CCD2)),
-  techInterviews(color: Color(0xFF0048FF)),
-  rejected(color: Color(0xFFE80808)),
-  rejectedDetailed(color: Color(0xFFF700FF)),
-  offer( color: Color(0xFF34D61D));
+  unknown(color: Color(0xFF000000), nameCode: ""),
+  initialInterviews(color: Color(0xFF19CCD2), nameCode: "initial"),
+  techInterviews(color: Color(0xFF0048FF), nameCode: "tech_interview"),
+  rejected(color: Color(0xFFE80808), nameCode: "rejected"),
+  rejectedDetailed(color: Color(0xFFF700FF), nameCode: "rejected_detailed"),
+  offer(color: Color(0xFF34D61D), nameCode: "offer");
 
   final Color color;
+  final String nameCode;
 
-  const ApplicationType({required this.color});
+  const ApplicationType({required this.color, required this.nameCode});
+
+  static ApplicationType fromNameCode(String code) {
+    return values.firstWhere(
+          (e) => e.nameCode == code,
+      orElse: () => ApplicationType.unknown,
+    );
+  }
 }
-
 
 class HomeNotifier extends AsyncNotifier<HomeState> {
   @override
   Future<HomeState> build() async {
-    await Future.delayed(const Duration(seconds: 1));
+    final repo = ref.watch(jobRepoProvider);
+    final jobs = await repo.getData();
 
-    var dataList = _getDataList();
+    if (jobs.isEmpty) {
+      return const HomeState(arcDataList: []);
+    }
 
-    return HomeState(arcDataList: dataList);
-  }
+    final counts = <ApplicationType, int>{};
+    for (var job in jobs) {
+      final type = ApplicationType.fromNameCode(job.status);
+      counts[type] = (counts[type] ?? 0) + 1;
+    }
 
-  List<ArcData> _getDataList() {
-    var rejections = ArcData(
-        total: 500, count: 200, type: ApplicationType.rejected);
-    var rejectionsDetailed = ArcData(
-        total: 500, count: 100, type: ApplicationType.rejectedDetailed);
-    var initialInterviews = ArcData(
-        total: 500, count: 80, type: ApplicationType.initialInterviews);
-    var techInterviews = ArcData(
-        total: 500, count: 30, type: ApplicationType.techInterviews);
-    var offers = ArcData(total: 500, count: 20, type: ApplicationType.offer);
+    final total = jobs.length;
+    final arcDataList = counts.entries.map((e) {
+      return ArcData(
+        total: total,
+        count: e.value,
+        type: e.key,
+      );
+    }).toList();
 
-    return [
-      // total,
-      rejections,
-      rejectionsDetailed,
-      initialInterviews,
-      techInterviews,
-      offers,
-    ];
+    return HomeState(arcDataList: arcDataList);
   }
 }
 
 final homeProvider = AsyncNotifierProvider<HomeNotifier, HomeState>(
   HomeNotifier.new,
 );
+
