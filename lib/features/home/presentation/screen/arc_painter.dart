@@ -290,8 +290,8 @@ class ArcPainter extends CustomPainter {
     }
   }
 
-  double calcSweepAngle({required int count, required int total}) =>
-      count / total.toDouble() * 360.0;
+  double calcSweepAngle({required double count, required double total}) =>
+      total == 0 ? 0 : count / total * 360.0;
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {

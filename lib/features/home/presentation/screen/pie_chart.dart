@@ -20,12 +20,18 @@ class PieWidget extends ConsumerStatefulWidget {
 }
 
 class _ChartWidgetState extends ConsumerState<PieWidget>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   int? _hoveredIndex;
   Offset? _hoveredCenter;
 
+  List<ArcData> _previousData = [];
+  List<ArcData> _currentData = [];
+
   late AnimationController _controller;
   late Animation<double> _animation;
+
+  late AnimationController _drawController;
+  late Animation<double> _drawAnimation;
 
   @override
   void initState() {
@@ -38,47 +44,77 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
       parent: _controller,
       curve: Curves.easeOutBack,
     );
+
+    _drawController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+    _drawAnimation = CurvedAnimation(
+      parent: _drawController,
+      curve: Curves.easeInOutCubic,
+    );
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _drawController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(homeProvider, (previous, next) {
+      if (next is AsyncData && next.value != null && mounted) {
+        setState(() {
+          if (_currentData.isNotEmpty) {
+            _previousData = _currentData;
+          }
+          _currentData = next.value!.arcDataList;
+        });
+        _drawController.forward(from: 0.0);
+      }
+    });
+
     final state = ref.watch(homeProvider);
 
     final chartWidget = state.when(
-      data: (state) {
-        final totalCount = state.arcDataList.isNotEmpty
-            ? state.arcDataList.first.total
-            : 0;
-        final rejectionsCount = state.arcDataList
+      data: (homeState) {
+        if (_currentData.isEmpty && homeState.arcDataList.isNotEmpty) {
+          _currentData = homeState.arcDataList;
+          _drawController.forward(from: 0.0);
+        }
+
+        final totalCount =
+        homeState.arcDataList.isNotEmpty ? homeState.arcDataList.first.total
+            .toInt() : 0;
+        final rejectionsCount = homeState.arcDataList
             .firstWhere(
               (e) => e.type == ApplicationType.rejected,
               orElse: () => ArcData.empty(),
             )
-            .count;
-        final rejectedDetailedCount = state.arcDataList
+            .count
+            .toInt();
+        final rejectedDetailedCount = homeState.arcDataList
             .firstWhere(
               (e) => e.type == ApplicationType.rejectedDetailed,
               orElse: () => ArcData.empty(),
             )
-            .count;
-        final offerCount = state.arcDataList
+            .count
+            .toInt();
+        final offerCount = homeState.arcDataList
             .firstWhere(
               (e) => e.type == ApplicationType.offer,
               orElse: () => ArcData.empty(),
             )
-            .count;
+            .count
+            .toInt();
 
         return MouseRegion(
           onHover: (event) {
             final (index, center) = _hitTest(
               event.localPosition,
-              state.arcDataList,
+              homeState.arcDataList,
             );
             if (index != _hoveredIndex) {
               setState(() {
@@ -100,16 +136,9 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
             _controller.reverse();
           },
           child: AnimatedBuilder(
-            animation: _animation,
+            animation: Listenable.merge([_animation, _drawAnimation]),
             builder: (context, child) {
-              Offset? extendedPoint;
-              if (_hoveredCenter != null) {
-                const centerPoint = Offset(100, 100);
-                final direction = _hoveredCenter! - centerPoint;
-                final normal = direction / direction.distance;
-                extendedPoint =
-                    _hoveredCenter! + normal * 60 * _animation.value;
-              }
+              final animatedData = _interpolateData(_drawAnimation.value);
 
               return Stack(
                 clipBehavior: Clip.none,
@@ -119,7 +148,7 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
                     height: 200,
                     child: CustomPaint(
                       painter: ArcPainter(
-                        items: state.arcDataList,
+                        items: animatedData,
                         hoveredCenter: _hoveredCenter,
                         hoveredIndex: _hoveredIndex,
                         extensionFactor: _animation.value,
@@ -153,7 +182,6 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
           borderRadius: BorderRadius.all(Radius.circular(16)),
         ),
         color: Colors.white,
-
         child: Padding(
           padding: const EdgeInsets.only(
             top: 16,
@@ -171,6 +199,51 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
         ),
       ),
     );
+  }
+
+  List<ArcData> _interpolateData(double t) {
+    if (_previousData.isEmpty) {
+      // If no previous data, interpolate from 0 count
+      return _currentData.map((d) {
+        return ArcData(
+          total: d.total,
+          count: d.count * t,
+          type: d.type,
+        );
+      }).toList();
+    }
+
+    final result = <ArcData>[];
+    final allTypes = {
+      ..._previousData.map((d) => d.type),
+      ..._currentData.map((d) => d.type),
+    };
+
+    // We want to maintain a consistent order for the chart segments
+    // Let's use the ApplicationType.values order
+    for (final type in ApplicationType.values) {
+      if (!allTypes.contains(type)) continue;
+
+      final prev = _previousData.firstWhere(
+            (d) => d.type == type,
+        orElse: () => ArcData(total: 1.0, count: 0.0, type: type),
+      );
+      final curr = _currentData.firstWhere(
+            (d) => d.type == type,
+        orElse: () => ArcData(total: 1.0, count: 0.0, type: type),
+      );
+
+      final interpolatedCount = prev.count + (curr.count - prev.count) * t;
+      final interpolatedTotal = prev.total + (curr.total - prev.total) * t;
+
+      result.add(ArcData(
+        total: interpolatedTotal,
+        count: interpolatedCount,
+        type: type,
+      ));
+    }
+
+    return result;
   }
 
   (int?, Offset?) _hitTest(Offset localPosition, List<ArcData> items) {

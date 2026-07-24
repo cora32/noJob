@@ -20,8 +20,8 @@ class RejectedData {
 }
 
 class ArcData {
-  final int total;
-  final int count;
+  final double total;
+  final double count;
   final ApplicationType type;
 
   const ArcData({
@@ -31,8 +31,8 @@ class ArcData {
   });
 
   ArcData.empty()
-      : total = 0,
-        count = 0,
+      : total = 0.0,
+        count = 0.0,
         type = ApplicationType.pending;
 }
 
@@ -73,11 +73,11 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
       counts[type] = (counts[type] ?? 0) + 1;
     }
 
-    final total = jobs.length;
+    final total = jobs.length.toDouble();
     final arcDataList = counts.entries.map((e) {
       return ArcData(
         total: total,
-        count: e.value,
+        count: e.value.toDouble(),
         type: e.key,
       );
     }).toList();

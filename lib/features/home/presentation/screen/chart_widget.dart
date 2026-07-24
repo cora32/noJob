@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:NoJob/features/home/presentation/providers/line_chart_provider.dart';
 import 'package:NoJob/shared/shared.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -40,6 +42,10 @@ class LineChartCard extends StatelessWidget {
     final baseDate = DateTime.now().subtract(
       Duration(days: chartData.length - 1),
     );
+
+    final double computedMaxY = chartData.isEmpty
+        ? 6
+        : max(6.0, chartData.map((s) => s.y).reduce(max) + 1);
 
     return Card(
       elevation: 4,
@@ -160,7 +166,7 @@ class LineChartCard extends StatelessWidget {
                       minX: 0,
                       maxX: (chartData.length - 1).toDouble(),
                       minY: 0,
-                      maxY: 6,
+                      maxY: computedMaxY,
                       lineBarsData: [
                         LineChartBarData(
                           spots: chartData,
