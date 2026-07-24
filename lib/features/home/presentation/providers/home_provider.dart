@@ -33,11 +33,11 @@ class ArcData {
   ArcData.empty()
       : total = 0,
         count = 0,
-        type = ApplicationType.unknown;
+        type = ApplicationType.pending;
 }
 
 enum ApplicationType {
-  unknown(color: Color(0xFF000000), nameCode: ""),
+  pending(color: Color(0xFF000000), nameCode: "Pending"),
   initialInterviews(color: Color(0xFF19CCD2), nameCode: "initial"),
   techInterviews(color: Color(0xFF0048FF), nameCode: "tech_interview"),
   rejected(color: Color(0xFFE80808), nameCode: "rejected"),
@@ -52,7 +52,7 @@ enum ApplicationType {
   static ApplicationType fromNameCode(String code) {
     return values.firstWhere(
           (e) => e.nameCode == code,
-      orElse: () => ApplicationType.unknown,
+      orElse: () => ApplicationType.pending,
     );
   }
 }

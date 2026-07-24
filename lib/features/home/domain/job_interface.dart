@@ -3,6 +3,7 @@ class JobData {
   final DateTime date;
   final String title;
   final String description;
+  final String link;
   final String status;
 
   JobData({
@@ -10,6 +11,7 @@ class JobData {
     required this.date,
     required this.title,
     required this.description,
+    required this.link,
     required this.status,
   });
 
@@ -19,6 +21,7 @@ class JobData {
       'date': date.toIso8601String(),
       'title': title,
       'description': description,
+      'link': link,
       'status': status,
     };
   }
@@ -29,6 +32,7 @@ class JobData {
       date: DateTime.parse(map['date'] as String),
       title: map['title'] as String,
       description: map['description'] as String,
+      link: (map['link'] as String?) ?? "",
       status: map['status'] as String,
     );
   }
