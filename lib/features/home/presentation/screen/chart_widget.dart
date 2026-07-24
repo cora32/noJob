@@ -61,6 +61,27 @@ class LineChartCard extends StatelessWidget {
                   // Increased width slightly for date labels
                   child: LineChart(
                     LineChartData(
+                      lineTouchData: LineTouchData(
+                        touchTooltipData: LineTouchTooltipData(
+                          getTooltipColor: (touchedSpot) => Colors.white,
+                          tooltipRoundedRadius: 8,
+                          tooltipBorder: BorderSide(
+                            color: Colors.grey.withValues(alpha: 0.3),
+                            width: 1,
+                          ),
+                          getTooltipItems: (List<LineBarSpot> touchedSpots) {
+                            return touchedSpots.map((spot) {
+                              return LineTooltipItem(
+                                spot.y.toInt().toString(),
+                                const TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              );
+                            }).toList();
+                          },
+                        ),
+                      ),
                       gridData: FlGridData(
                         show: true,
                         drawVerticalLine: true,
@@ -111,11 +132,24 @@ class LineChartCard extends StatelessWidget {
                             },
                           ),
                         ),
-                        leftTitles: const AxisTitles(
+                        leftTitles: AxisTitles(
                           sideTitles: SideTitles(
                             showTitles: true,
                             interval: 1,
                             reservedSize: 42,
+                            getTitlesWidget: (value, meta) {
+                              return SideTitleWidget(
+                                meta: meta,
+                                space: 8,
+                                child: Text(
+                                  value.toInt().toString(),
+                                  style: const TextStyle(
+                                    color: Color(0xff68737d),
+                                    fontSize: 10,
+                                  ),
+                                ),
+                              );
+                            },
                           ),
                         ),
                       ),

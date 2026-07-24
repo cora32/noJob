@@ -42,4 +42,8 @@ abstract class IJobRepo {
   Future<List<JobData>> getData();
 
   Future<void> addJob(JobData data);
+
+  Future<void> updateJobStatus(int id, String status);
+
+  Future<void> deleteJob(int id);
 }

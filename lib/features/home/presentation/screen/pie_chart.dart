@@ -158,8 +158,8 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
           padding: const EdgeInsets.only(
             top: 16,
             bottom: 4,
-            left: 32,
-            right: 32,
+            left: 16,
+            right: 16,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

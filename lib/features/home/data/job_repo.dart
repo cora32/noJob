@@ -29,4 +29,25 @@ class JobRepo implements IJobRepo {
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
+
+  @override
+  Future<void> updateJobStatus(int id, String status) async {
+    final db = await _databaseService.database;
+    await db.update(
+      'jobs',
+      {'status': status},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  @override
+  Future<void> deleteJob(int id) async {
+    final db = await _databaseService.database;
+    await db.delete(
+      'jobs',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
 }

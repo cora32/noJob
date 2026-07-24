@@ -1,4 +1,5 @@
 import 'package:NoJob/features/home/domain/job_interface.dart';
+import 'package:NoJob/features/home/presentation/providers/home_provider.dart';
 import 'package:NoJob/features/logs/presentation/providers/log_provider.dart';
 import 'package:NoJob/shared/shared.dart';
 import 'package:flutter/material.dart';
@@ -164,41 +165,126 @@ class LogItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: Colors.white,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Text(
-              item.id.toString(),
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w100),
-            ),
-            SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    item.title,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    item.description,
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Row(
+        children: [
+          Text(
+            item.id.toString(),
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w100),
+          ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: Card(
+              color: Colors.white,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 8.0,
+                  horizontal: 16,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.title,
+                            style: const TextStyle(
+
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            item.description,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    StateToggle(item: item),
+                  ],
+                ),
               ),
             ),
-            SizedBox(width: 8),
-            Text(
-              item.status,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
+    );
+  }
+}
+
+class StateToggle extends ConsumerWidget {
+  final JobData item;
+
+  const StateToggle({super.key, required this.item});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Row(
+      children: [
+        ...ApplicationType.values.map((type) {
+          final isSelected = item.status == type.nameCode;
+          return GestureDetector(
+            onTap: () {
+              if (item.id != null) {
+                ref
+                    .read(logsProvider.notifier)
+                    .updateStatus(item.id!, type.nameCode);
+              }
+            },
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 2),
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: type.color.withOpacity(isSelected ? 1 : 0.5),
+                shape: BoxShape.circle,
+                border: isSelected
+                    ? Border.all(color: Colors.black, width: 1)
+                    : null,
+              ),
+            ),
+          );
+        }),
+        const SizedBox(width: 8),
+        IconButton(
+          icon: const Icon(Icons.close, size: 16, color: Colors.red),
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (context) =>
+                  AlertDialog(
+                    title: const Text("Remove Record"),
+                    content: const Text(
+                        "Are you sure you want to remove this record?"),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text("No"),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          if (item.id != null) {
+                            ref.read(logsProvider.notifier).removeJob(item.id!);
+                          }
+                          Navigator.pop(context);
+                        },
+                        child: const Text("Yes"),
+                      ),
+                    ],
+                  ),
+            );
+          },
+        ),
+      ],
     );
   }
 }
