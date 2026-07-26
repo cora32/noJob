@@ -1,6 +1,7 @@
 import 'package:NoJob/features/home/presentation/screen/chart_widget.dart';
 import 'package:NoJob/features/home/presentation/screen/pie_chart.dart';
 import 'package:NoJob/features/logs/presentation/log_screen.dart';
+import 'package:NoJob/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -14,8 +15,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'noJob',
-      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      onGenerateTitle: (context) => AppLocalizations.of(context)!.appName,
+      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.red)),
       home: const ScaffoldWidget(),
     );
   }

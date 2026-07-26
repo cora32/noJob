@@ -1,6 +1,7 @@
 import 'package:NoJob/features/home/domain/job_interface.dart';
 import 'package:NoJob/features/home/presentation/providers/home_provider.dart';
 import 'package:NoJob/features/logs/presentation/providers/log_provider.dart';
+import 'package:NoJob/l10n/app_localizations.dart';
 import 'package:NoJob/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,7 +23,7 @@ class LogWidget extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text("Logs", style: labelStyle),
+              Text(AppLocalizations.of(context)!.logs, style: labelStyle),
               const SizedBox(height: 16),
               const Expanded(child: LogsPanel()),
               const SizedBox(height: 16),
@@ -36,7 +37,7 @@ class LogWidget extends ConsumerWidget {
                         builder: (context) => const AddJobDialog(),
                       );
                     },
-                    child: const Text("Add"),
+                    child: Text(AppLocalizations.of(context)!.add),
                   ),
                 ],
               ),
@@ -94,7 +95,7 @@ class _AddJobDialogState extends State<AddJobDialog> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
+              child: Text(AppLocalizations.of(context)!.cancel),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -109,7 +110,7 @@ class _AddJobDialogState extends State<AddJobDialog> {
                   if (context.mounted) Navigator.pop(context);
                 }
               },
-              child: const Text("Save"),
+              child: Text(AppLocalizations.of(context)!.save),
             ),
           ],
         );
@@ -135,7 +136,7 @@ class LogsPanel extends ConsumerWidget {
           final logs = state.logs;
 
           if (logs.isEmpty) {
-            return const Center(child: Text("No logs"));
+            return Center(child: Text(AppLocalizations.of(context)!.noLogs));
           } else {
             return ListView.builder(
               itemCount: logs.length,
@@ -258,7 +259,7 @@ class StateToggle extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Text(type.nameCode),
+                    Text(type.localizedName(context)),
                   ],
                 ),
               );

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:NoJob/features/home/presentation/providers/home_provider.dart';
 import 'package:NoJob/features/home/presentation/screen/arc_painter.dart';
 import 'package:NoJob/features/home/presentation/screen/info_panel.dart';
+import 'package:NoJob/l10n/app_localizations.dart';
 import 'package:NoJob/shared/extensions.dart';
 import 'package:NoJob/shared/shared.dart';
 import 'package:flutter/material.dart';
@@ -148,6 +149,7 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
                     height: 200,
                     child: CustomPaint(
                       painter: ArcPainter(
+                        getLocalizedName: (type) => type.localizedName(context),
                         items: animatedData,
                         hoveredCenter: _hoveredCenter,
                         hoveredIndex: _hoveredIndex,
@@ -192,7 +194,7 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Overview', style: labelStyle),
+              Text(AppLocalizations.of(context)!.overview, style: labelStyle),
               Padding(padding: const EdgeInsets.all(32), child: chartWidget),
             ],
           ),

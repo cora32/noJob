@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:NoJob/features/home/presentation/providers/line_chart_provider.dart';
+import 'package:NoJob/l10n/app_localizations.dart';
 import 'package:NoJob/shared/shared.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -56,7 +57,8 @@ class LineChartCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Applications today: $applicationsToday', style: labelStyle),
+            Text(AppLocalizations.of(context)!.appsToday(applicationsToday),
+                style: labelStyle),
             const SizedBox(height: 16),
             SizedBox(
               height: 200,

@@ -1,4 +1,5 @@
 import 'package:NoJob/features/home/presentation/providers/job_repo_provider.dart';
+import 'package:NoJob/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -38,10 +39,10 @@ class ArcData {
 
 enum ApplicationType {
   pending(color: Color(0xFF000000), nameCode: "pending"),
-  initialInterviews(color: Color(0xFF19CCD2), nameCode: "initial"),
-  techInterviews(color: Color(0xFF0048FF), nameCode: "tech_interview"),
+  initialInterviews(color: Color(0xFF19CCD2), nameCode: "first_interview"),
+  techInterviews(color: Color(0xFF749CFF), nameCode: "tech_interview"),
   rejected(color: Color(0xFFE80808), nameCode: "rejected"),
-  rejectedDetailed(color: Color(0xFFF700FF), nameCode: "rejected_detailed"),
+  rejectedDetailed(color: Color(0xFFFFDD00), nameCode: "rejected_detailed"),
   offer(color: Color(0xFF34D61D), nameCode: "offer");
 
   final Color color;
@@ -54,6 +55,18 @@ enum ApplicationType {
           (e) => e.nameCode == code,
       orElse: () => ApplicationType.pending,
     );
+  }
+
+  String localizedName(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    return switch (this) {
+      ApplicationType.pending => l10n.pending,
+      ApplicationType.offer => l10n.offer,
+      ApplicationType.rejected => l10n.rejected,
+      ApplicationType.rejectedDetailed => l10n.rejected_detailed,
+      ApplicationType.techInterviews => l10n.tech_interview,
+      ApplicationType.initialInterviews => l10n.first_interview,
+    };
   }
 }
 

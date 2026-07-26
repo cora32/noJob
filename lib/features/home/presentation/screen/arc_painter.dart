@@ -32,10 +32,13 @@ class ArcPainter extends CustomPainter {
 
   static const double strokeWidth = 22.0;
 
+  final String Function(ApplicationType) getLocalizedName;
+
   ArcPainter({
     required this.items,
     this.hoveredCenter,
     this.hoveredIndex,
+    required this.getLocalizedName,
     this.extensionFactor = 0.0,
   }) {
     _innerData = [];
@@ -181,7 +184,7 @@ class ArcPainter extends CustomPainter {
         ),
       );
       final labelTextSpan = TextSpan(
-        text: items[hoveredIndex].type.nameCode,
+        text: getLocalizedName(items[hoveredIndex].type),
         style: TextStyle(
           color: Colors.black,
           fontSize: 15,

@@ -1,5 +1,5 @@
 name: NoJob
-description: "A depressing dashboard for your job applications rejections."
+description: "A dashboard for your career despair."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -30,10 +30,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_riverpod: ^2.5.1
-  riverpod_annotation: ^2.3.5
+  flutter_localizations:
+    sdk: flutter
+  flutter_riverpod: ^3.3.2
+  riverpod_annotation: ^4.0.3
   fl_chart: ^0.70.0
-  intl: ^0.19.0
+  intl: ^0.20.0
   sqflite: ^2.3.0
   path: ^1.9.0
   sqflite_common_ffi: ^2.3.0
@@ -45,10 +47,9 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  riverpod_generator: ^2.4.0
-  build_runner: ^2.4.9
-  custom_lint: ^0.6.4
-  riverpod_lint: ^2.3.10
+  riverpod_generator: ^4.0.4
+  build_runner: ^2.4.13
+  riverpod_lint: ^3.1.4
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -62,7 +63,7 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
+  generate: true
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

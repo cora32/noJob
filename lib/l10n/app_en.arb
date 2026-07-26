@@ -1,0 +1,29 @@
+{
+  "@@locale": "en",
+  "appName": "noJob",
+  "noLogs": "No applications yet",
+  "pending": "Pending",
+  "offer": "Offer",
+  "rejected": "Rejected",
+  "rejected_detailed": "Rejected with reason",
+  "tech_interview": "Tech Interview",
+  "first_interview": "First Interview",
+  "total": "Total",
+  "rejections": "Rejections",
+  "offers": "Offers",
+  "add": "Add",
+  "company": "Company Name",
+  "description": "Description",
+  "link": "Job Link",
+  "save": "Save",
+  "cancel": "Cancel",
+  "addJob": "Add Application",
+  "overview": "Overview",
+  "logs": "Logs",
+  "appsToday": "Applications today: {count}",
+  "@appsToday" : {
+    "placeholders": {
+       "count": {"type": "int"}
+    }
+  }
+}

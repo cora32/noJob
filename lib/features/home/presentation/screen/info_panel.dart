@@ -1,3 +1,4 @@
+import 'package:NoJob/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class InfoPanel extends StatelessWidget {
@@ -29,9 +30,10 @@ class InfoPanel extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const TextSpan(
-                text: '\nRejections',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.normal),
+              TextSpan(
+                text: '\n${AppLocalizations.of(context)!.rejections}',
+                style: const TextStyle(
+                    fontSize: 15, fontWeight: FontWeight.normal),
               ),
             ],
           ),
@@ -48,9 +50,10 @@ class InfoPanel extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const TextSpan(
-                text: '\nTotal',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.normal),
+              TextSpan(
+                text: '\n${AppLocalizations.of(context)!.total}',
+                style: const TextStyle(
+                    fontSize: 15, fontWeight: FontWeight.normal),
               ),
             ],
           ),
@@ -58,7 +61,8 @@ class InfoPanel extends StatelessWidget {
         RichText(
           textAlign: TextAlign.center,
           text: TextSpan(
-            style: const TextStyle(color: Colors.green, fontSize: 14),
+            style: TextStyle(
+                color: offers == 0 ? Colors.grey : Colors.green, fontSize: 14),
             children: [
               TextSpan(
                 text: '$offers',
@@ -67,9 +71,10 @@ class InfoPanel extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const TextSpan(
-                text: '\nOffers',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.normal),
+              TextSpan(
+                text: '\n${AppLocalizations.of(context)!.offers}',
+                style: const TextStyle(
+                    fontSize: 15, fontWeight: FontWeight.normal),
               ),
             ],
           ),
