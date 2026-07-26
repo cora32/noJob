@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:NoJob/features/home/presentation/providers/home_provider.dart';
 import 'package:NoJob/features/home/presentation/providers/line_chart_provider.dart';
 import 'package:NoJob/l10n/app_localizations.dart';
 import 'package:NoJob/shared/shared.dart';
@@ -18,35 +19,46 @@ class LineChartWidget extends ConsumerWidget {
     return state.when(
       data: (state) => LineChartCard(
         applicationsToday: state.applicationsToday,
-        chartData: state.data,
+        sourceData: state.sourceData,
       ),
       error: (error, stack) {
         return Text(error.toString());
       },
-      loading: () => CircularProgressIndicator(),
+      loading: () => const CircularProgressIndicator(),
     );
   }
 }
 
 class LineChartCard extends StatelessWidget {
-  final List<FlSpot> chartData;
+  final Map<ApplicationSource, List<FlSpot>> sourceData;
   final int applicationsToday;
 
   const LineChartCard({
     super.key,
-    required this.chartData,
+    required this.sourceData,
     required this.applicationsToday,
   });
 
   @override
   Widget build(BuildContext context) {
-    final baseDate = DateTime.now().subtract(
-      Duration(days: chartData.length - 1),
+    final firstSpots = sourceData.values.firstWhere(
+      (spots) => spots.isNotEmpty,
+      orElse: () => [],
     );
 
-    final double computedMaxY = chartData.isEmpty
-        ? 6
-        : max(6.0, chartData.map((s) => s.y).reduce(max) + 1);
+    final baseDate = DateTime.now().subtract(
+      Duration(days: firstSpots.isNotEmpty ? firstSpots.length - 1 : 13),
+    );
+
+    double maxVal = 0;
+    for (var spots in sourceData.values) {
+      if (spots.isNotEmpty) {
+        final currentMax = spots.map((s) => s.y).reduce(max);
+        if (currentMax > maxVal) maxVal = currentMax;
+      }
+    }
+
+    final double computedMaxY = max(6.0, maxVal + 1);
 
     return Card(
       elevation: 4,
@@ -57,16 +69,17 @@ class LineChartCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(AppLocalizations.of(context)!.appsToday(applicationsToday),
-                style: labelStyle),
+            Text(
+              AppLocalizations.of(context)!.appsToday(applicationsToday),
+              style: labelStyle,
+            ),
             const SizedBox(height: 16),
             SizedBox(
               height: 200,
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: SizedBox(
-                  width: chartData.length * 60.0,
-                  // Increased width slightly for date labels
+                  width: (firstSpots.length) * 60.0,
                   child: LineChart(
                     LineChartData(
                       lineTouchData: LineTouchData(
@@ -81,8 +94,8 @@ class LineChartCard extends StatelessWidget {
                             return touchedSpots.map((spot) {
                               return LineTooltipItem(
                                 spot.y.toInt().toString(),
-                                const TextStyle(
-                                  color: Colors.black,
+                                TextStyle(
+                                  color: spot.bar.color ?? Colors.black,
                                   fontWeight: FontWeight.bold,
                                 ),
                               );
@@ -130,7 +143,7 @@ class LineChartCard extends StatelessWidget {
                                 meta: meta,
                                 space: 4,
                                 child: Text(
-                                  DateFormat('dd/MM/yy').format(date),
+                                  DateFormat('dd/MM').format(date),
                                   style: const TextStyle(
                                     color: Color(0xff68737d),
                                     fontSize: 8,
@@ -166,33 +179,84 @@ class LineChartCard extends StatelessWidget {
                         border: Border.all(color: const Color(0xff37434d)),
                       ),
                       minX: 0,
-                      maxX: (chartData.length - 1).toDouble(),
+                      maxX: (firstSpots.length - 1).toDouble(),
                       minY: 0,
                       maxY: computedMaxY,
-                      lineBarsData: [
-                        LineChartBarData(
-                          spots: chartData,
+                      lineBarsData: sourceData.entries.map((entry) {
+                        final source = entry.key;
+                        final spots = entry.value;
+                        return LineChartBarData(
+                          spots: spots,
                           isCurved: true,
                           curveSmoothness: 0.35,
                           preventCurveOverShooting: true,
-                          color: Color(0xffc51313),
-                          barWidth: 1,
+                          color: source.color,
+                          barWidth: 2,
                           isStrokeCapRound: true,
-                          dotData: const FlDotData(show: true),
+                          dotData: const FlDotData(show: false),
                           belowBarData: BarAreaData(
                             show: true,
-                            color: Color(0xffc51313).withValues(alpha: 0.2),
+                            color: source.color.withValues(alpha: 0.1),
                           ),
-                        ),
-                      ],
+                        );
+                      }).toList(),
                     ),
                   ),
                 ),
               ),
             ),
+            const SizedBox(height: 12),
+            const Padding(
+              padding: EdgeInsetsGeometry.symmetric(horizontal: 32),
+              child: LegendWidget(),
+            ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class LegendWidget extends StatelessWidget {
+  const LegendWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 16,
+      runSpacing: 8,
+      children: ApplicationSource.values
+          .where((s) => s != ApplicationSource.none)
+          .map((source) => _LegendItem(source: source))
+          .toList(),
+    );
+  }
+}
+
+class _LegendItem extends StatelessWidget {
+  final ApplicationSource source;
+
+  const _LegendItem({required this.source});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 12,
+          height: 12,
+          decoration: BoxDecoration(
+            color: source.color,
+            borderRadius: BorderRadius.circular(2),
+          ),
+        ),
+        const SizedBox(width: 4),
+        Text(
+          source.nameCode.toUpperCase(),
+          style: const TextStyle(fontSize: 10, color: Colors.grey),
+        ),
+      ],
     );
   }
 }

@@ -17,7 +17,7 @@ class LogWidget extends ConsumerWidget {
       elevation: 4,
       color: Colors.white,
       child: SizedBox(
-        width: 450,
+        width: 550,
         child: Padding(
           padding: EdgeInsets.all(16.0),
           child: Column(
