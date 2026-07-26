@@ -25,16 +25,44 @@ class ArcData {
   final double count;
   final ApplicationType type;
 
-  const ArcData({
-    required this.total,
-    required this.count,
-    required this.type,
+  const ArcData({required this.total, required this.count, required this.type});
+
+  ArcData.empty() : total = 0.0, count = 0.0, type = ApplicationType.pending;
+}
+
+enum ApplicationSource {
+  hh(nameCode: "hh", displayCode: "HH", color: Color(0xFFFF0000)),
+  linkedin(nameCode: "linkedin", displayCode: "IN", color: Color(0xFF0051FF)),
+  indeed(nameCode: "indeed", displayCode: "ID", color: Color(0xFFD3FF35)),
+  glassdoor(nameCode: "glassdoor", displayCode: "GD", color: Color(0xFF21B80E)),
+  unknown(nameCode: "unknown", displayCode: "?", color: Color(0xFF454545)),
+  none(nameCode: "none", displayCode: "", color: Color(0xFF000000));
+
+  final Color color;
+  final String nameCode;
+  final String displayCode;
+
+  const ApplicationSource({
+    required this.color,
+    required this.nameCode,
+    required this.displayCode,
   });
 
-  ArcData.empty()
-      : total = 0.0,
-        count = 0.0,
-        type = ApplicationType.pending;
+  static ApplicationSource fromNameCode(String code) {
+    return values.firstWhere(
+      (e) => e.nameCode == code,
+      orElse: () => ApplicationSource.unknown,
+    );
+  }
+
+  static ApplicationSource fromLink(String link) {
+    final lowerLink = link.toLowerCase();
+    if (lowerLink.contains('hh.ru')) return ApplicationSource.hh;
+    if (lowerLink.contains('linkedin.com')) return ApplicationSource.linkedin;
+    if (lowerLink.contains('indeed.com')) return ApplicationSource.indeed;
+    if (lowerLink.contains('glassdoor.com')) return ApplicationSource.glassdoor;
+    return ApplicationSource.unknown;
+  }
 }
 
 enum ApplicationType {
@@ -52,7 +80,7 @@ enum ApplicationType {
 
   static ApplicationType fromNameCode(String code) {
     return values.firstWhere(
-          (e) => e.nameCode == code,
+      (e) => e.nameCode == code,
       orElse: () => ApplicationType.pending,
     );
   }
@@ -88,11 +116,7 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
 
     final total = jobs.length.toDouble();
     final arcDataList = counts.entries.map((e) {
-      return ArcData(
-        total: total,
-        count: e.value.toDouble(),
-        type: e.key,
-      );
+      return ArcData(total: total, count: e.value.toDouble(), type: e.key);
     }).toList();
 
     return HomeState(arcDataList: arcDataList);
@@ -102,4 +126,3 @@ class HomeNotifier extends AsyncNotifier<HomeState> {
 final homeProvider = AsyncNotifierProvider<HomeNotifier, HomeState>(
   HomeNotifier.new,
 );
-

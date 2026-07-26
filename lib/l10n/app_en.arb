@@ -20,6 +20,7 @@
   "addJob": "Add Application",
   "overview": "Overview",
   "logs": "Logs",
+  "fetch_details": "Fetch Details",
   "appsToday": "Applications today: {count}",
   "@appsToday" : {
     "placeholders": {

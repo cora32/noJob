@@ -5,6 +5,7 @@ class JobData {
   final String description;
   final String link;
   final String status;
+  final String source;
 
   JobData({
     this.id,
@@ -13,6 +14,7 @@ class JobData {
     required this.description,
     required this.link,
     required this.status,
+    required this.source,
   });
 
   Map<String, dynamic> toMap() {
@@ -23,6 +25,7 @@ class JobData {
       'description': description,
       'link': link,
       'status': status,
+      'source': source,
     };
   }
 
@@ -34,6 +37,7 @@ class JobData {
       description: map['description'] as String,
       link: (map['link'] as String?) ?? "",
       status: map['status'] as String,
+      source: map['source'] as String,
     );
   }
 }

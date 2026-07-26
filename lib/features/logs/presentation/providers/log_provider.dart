@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:NoJob/features/home/data/vacancy_scraper.dart';
 import 'package:NoJob/features/home/domain/job_interface.dart';
 import 'package:NoJob/features/home/presentation/providers/home_provider.dart';
 import 'package:NoJob/features/home/presentation/providers/job_repo_provider.dart';
@@ -28,6 +29,7 @@ class LogsNotifier extends AsyncNotifier<LogsState> {
       description: description,
       link: link,
       status: ApplicationType.pending.nameCode,
+      source: ApplicationSource.fromLink(link).nameCode,
     );
 
     final repo = ref.read(jobRepoProvider);
@@ -54,6 +56,11 @@ class LogsNotifier extends AsyncNotifier<LogsState> {
     ref.invalidateSelf();
     ref.invalidate(lineChartProvider);
     ref.invalidate(homeProvider);
+  }
+
+  Future<ScrapedVacancy?> fetchVacancy(String url) async {
+    final scraper = ref.read(vacancyScraperProvider);
+    return await scraper.fetchVacancy(url);
   }
 }
 

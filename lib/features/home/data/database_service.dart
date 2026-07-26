@@ -23,7 +23,7 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -33,6 +33,10 @@ class DatabaseService {
     if (oldVersion < 2) {
       await db.execute(
           'ALTER TABLE jobs ADD COLUMN link TEXT NOT NULL DEFAULT ""');
+    }
+    if (oldVersion < 3) {
+      await db.execute(
+          'ALTER TABLE jobs ADD COLUMN source TEXT NOT NULL DEFAULT "unknown"');
     }
   }
 
@@ -44,7 +48,8 @@ class DatabaseService {
         title TEXT NOT NULL,
         description TEXT NOT NULL,
         link TEXT NOT NULL,
-        status TEXT NOT NULL
+        status TEXT NOT NULL,
+        source TEXT NOT NULL
       )
     ''');
   }

@@ -49,17 +49,18 @@ class LogWidget extends ConsumerWidget {
   }
 }
 
-class AddJobDialog extends StatefulWidget {
+class AddJobDialog extends ConsumerStatefulWidget {
   const AddJobDialog({super.key});
 
   @override
-  State<AddJobDialog> createState() => _AddJobDialogState();
+  ConsumerState<AddJobDialog> createState() => _AddJobDialogState();
 }
 
-class _AddJobDialogState extends State<AddJobDialog> {
+class _AddJobDialogState extends ConsumerState<AddJobDialog> {
   final _nameController = TextEditingController();
   final _descController = TextEditingController();
   final _linkController = TextEditingController();
+  bool _isFetching = false;
 
   @override
   void dispose() {
@@ -69,52 +70,89 @@ class _AddJobDialogState extends State<AddJobDialog> {
     super.dispose();
   }
 
+  Future<void> _handleFetch() async {
+    final url = _linkController.text.trim();
+    if (url.isEmpty) return;
+
+    setState(() => _isFetching = true);
+
+    final data = await ref.read(logsProvider.notifier).fetchVacancy(url);
+
+    if (data != null && mounted) {
+      setState(() {
+        if (data.companyName.isNotEmpty)
+          _nameController.text = data.companyName;
+        if (data.title.isNotEmpty) _nameController.text = data.companyName;
+        if (data.title.isNotEmpty) _descController.text = data.title;
+      });
+    }
+
+    if (mounted) setState(() => _isFetching = false);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Consumer(
-      builder: (context, ref, child) {
-        return AlertDialog(
-          title: const Text("Add Job Application"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: "Company Name"),
+    final l10n = AppLocalizations.of(context)!;
+    return AlertDialog(
+      backgroundColor: Colors.white,
+      title: Text(l10n.addJob),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _linkController,
+            decoration: InputDecoration(
+              labelText: l10n.link,
+              suffixIcon: _isFetching
+                  ? const SizedBox(
+                width: 20,
+                height: 20,
+                child: Padding(
+                  padding: EdgeInsets.all(12.0),
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              )
+                  : IconButton(
+                visualDensity: VisualDensity.compact,
+                icon: const Icon(Icons.download),
+                onPressed: _handleFetch,
+                tooltip: AppLocalizations.of(context)!.fetch_details,
               ),
-              TextField(
-                controller: _descController,
-                decoration: const InputDecoration(labelText: "Description"),
-              ),
-              TextField(
-                controller: _linkController,
-                decoration: const InputDecoration(labelText: "Job Link"),
-              ),
-            ],
+            ),
+            onSubmitted: (_) => _handleFetch(),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(AppLocalizations.of(context)!.cancel),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                if (_nameController.text.isNotEmpty) {
-                  await ref
-                      .read(logsProvider.notifier)
-                      .addJob(
-                        _nameController.text,
-                        _descController.text,
-                        _linkController.text,
-                      );
-                  if (context.mounted) Navigator.pop(context);
-                }
-              },
-              child: Text(AppLocalizations.of(context)!.save),
-            ),
-          ],
-        );
-      },
+          const SizedBox(height: 8),
+          TextField(
+            controller: _nameController,
+            decoration: InputDecoration(labelText: l10n.company),
+          ),
+          TextField(
+            controller: _descController,
+            decoration: InputDecoration(labelText: l10n.description),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(l10n.cancel),
+        ),
+        ElevatedButton(
+          onPressed: _isFetching
+              ? null
+              : () async {
+            if (_nameController.text.isNotEmpty) {
+              await ref.read(logsProvider.notifier).addJob(
+                _nameController.text,
+                _descController.text,
+                _linkController.text,
+              );
+              if (context.mounted) Navigator.pop(context);
+            }
+          },
+          child: Text(l10n.save),
+        ),
+      ],
     );
   }
 }
@@ -186,6 +224,29 @@ class LogItem extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
+                    Container(
+                      width: 24,
+                      height: 24,
+                      decoration: BoxDecoration(
+                        color: ApplicationSource
+                            .fromNameCode(item.source)
+                            .color,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Center(
+                        child: Text(
+                          ApplicationSource
+                              .fromNameCode(item.source)
+                              .displayCode,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -193,9 +254,7 @@ class LogItem extends StatelessWidget {
                           Text(
                             item.title,
                             style: const TextStyle(
-
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold),
+                                fontSize: 12, fontWeight: FontWeight.bold),
                           ),
                           Text(
                             item.description,
