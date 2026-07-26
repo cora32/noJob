@@ -173,7 +173,7 @@ class ArcPainter extends CustomPainter {
 
       // Render Label
       final valueTextSpan = TextSpan(
-        text: '${items[hoveredIndex].count}',
+        text: '${items[hoveredIndex].count.toInt()}',
         style: TextStyle(
           color: Colors.black,
           fontSize: 14,

@@ -37,7 +37,7 @@ class ArcData {
 }
 
 enum ApplicationType {
-  pending(color: Color(0xFF000000), nameCode: "Pending"),
+  pending(color: Color(0xFF000000), nameCode: "pending"),
   initialInterviews(color: Color(0xFF19CCD2), nameCode: "initial"),
   techInterviews(color: Color(0xFF0048FF), nameCode: "tech_interview"),
   rejected(color: Color(0xFFE80808), nameCode: "rejected"),

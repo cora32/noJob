@@ -227,32 +227,45 @@ class StateToggle extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        ...ApplicationType.values.map((type) {
-          final isSelected = item.status == type.nameCode;
-          return GestureDetector(
-            onTap: () {
-              if (item.id != null) {
+        DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            padding: EdgeInsetsGeometry.symmetric(vertical: 2, horizontal: 4),
+            value: item.status.toLowerCase(),
+            isDense: true,
+            borderRadius: BorderRadius.circular(4),
+            icon: const Icon(Icons.arrow_drop_down, size: 16),
+            style: const TextStyle(fontSize: 12, color: Colors.black),
+            onChanged: (String? newValue) {
+              if (newValue != null && item.id != null) {
                 ref
                     .read(logsProvider.notifier)
-                    .updateStatus(item.id!, type.nameCode);
+                    .updateStatus(item.id!, newValue);
               }
             },
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 2),
-              width: 12,
-              height: 12,
-              decoration: BoxDecoration(
-                color: type.color.withOpacity(isSelected ? 1 : 0.5),
-                shape: BoxShape.circle,
-                border: isSelected
-                    ? Border.all(color: Colors.black, width: 1)
-                    : null,
-              ),
-            ),
-          );
-        }),
-        const SizedBox(width: 8),
+            items: ApplicationType.values.map((ApplicationType type) {
+              return DropdownMenuItem<String>(
+                value: type.nameCode,
+                child: Row(
+                  children: [
+                    Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: type.color,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(type.nameCode),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        const SizedBox(width: 4),
         IconButton(
           icon: const Icon(Icons.close, size: 16, color: Colors.red),
           padding: EdgeInsets.zero,
@@ -264,7 +277,8 @@ class StateToggle extends ConsumerWidget {
                   AlertDialog(
                     title: const Text("Remove Record"),
                     content: const Text(
-                        "Are you sure you want to remove this record?"),
+                      "Are you sure you want to remove this record?",
+                    ),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.pop(context),
@@ -278,7 +292,7 @@ class StateToggle extends ConsumerWidget {
                           Navigator.pop(context);
                         },
                         child: const Text("Yes"),
-                      ),
+                  ),
                     ],
                   ),
             );

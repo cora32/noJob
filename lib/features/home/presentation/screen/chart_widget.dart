@@ -96,13 +96,13 @@ class LineChartCard extends StatelessWidget {
                         getDrawingHorizontalLine: (value) {
                           return const FlLine(
                             color: Color(0xffe7e7e7),
-                            strokeWidth: 1,
+                            strokeWidth: 0.5,
                           );
                         },
                         getDrawingVerticalLine: (value) {
                           return const FlLine(
                             color: Color(0xffe7e7e7),
-                            strokeWidth: 1,
+                            strokeWidth: 0.5,
                           );
                         },
                       ),
@@ -126,12 +126,12 @@ class LineChartCard extends StatelessWidget {
 
                               return SideTitleWidget(
                                 meta: meta,
-                                space: 8,
+                                space: 4,
                                 child: Text(
-                                  DateFormat('MMM d').format(date),
+                                  DateFormat('dd/MM/yy').format(date),
                                   style: const TextStyle(
                                     color: Color(0xff68737d),
-                                    fontSize: 10,
+                                    fontSize: 8,
                                   ),
                                 ),
                               );
@@ -171,13 +171,15 @@ class LineChartCard extends StatelessWidget {
                         LineChartBarData(
                           spots: chartData,
                           isCurved: true,
-                          color: Colors.blueAccent,
-                          barWidth: 3,
+                          curveSmoothness: 0.35,
+                          preventCurveOverShooting: true,
+                          color: Color(0xffc51313),
+                          barWidth: 1,
                           isStrokeCapRound: true,
                           dotData: const FlDotData(show: true),
                           belowBarData: BarAreaData(
                             show: true,
-                            color: Colors.blueAccent.withValues(alpha: 0.2),
+                            color: Color(0xffc51313).withValues(alpha: 0.2),
                           ),
                         ),
                       ],
