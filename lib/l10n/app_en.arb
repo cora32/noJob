@@ -26,5 +26,6 @@
     "placeholders": {
        "count": {"type": "int"}
     }
-  }
+  },
+  "fetchError": "Failed to fetch vacancy details. Please check the link or enter details manually."
 }

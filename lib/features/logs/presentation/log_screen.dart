@@ -78,16 +78,26 @@ class _AddJobDialogState extends ConsumerState<AddJobDialog> {
 
     final data = await ref.read(logsProvider.notifier).fetchVacancy(url);
 
-    if (data != null && mounted) {
+    if (!mounted) return;
+
+    if (data != null) {
       setState(() {
         if (data.companyName.isNotEmpty)
           _nameController.text = data.companyName;
-        if (data.title.isNotEmpty) _nameController.text = data.companyName;
         if (data.title.isNotEmpty) _descController.text = data.title;
       });
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context)!.fetchError),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+          showCloseIcon: true,
+        ),
+      );
     }
 
-    if (mounted) setState(() => _isFetching = false);
+    setState(() => _isFetching = false);
   }
 
   @override
