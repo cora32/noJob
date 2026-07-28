@@ -52,6 +52,7 @@ dev_dependencies:
   riverpod_generator: ^4.0.4
   build_runner: ^2.4.13
   riverpod_lint: ^3.1.4
+  flutter_launcher_icons: ^0.13.1
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -62,6 +63,20 @@ dev_dependencies:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
+
+flutter_launcher_icons:
+  image_path: "assets/icon/icon_ios.png" # Full square, no transparency (for iOS)
+  android: true
+  ios: true
+
+  # Android: Use layers to handle transparency correctly
+  adaptive_icon_background: "#4B4038" # Your desired background color
+  adaptive_icon_foreground: "assets/icon/njob_text_white.png" # Your logo with transparency
+
+  # Windows: Uses the logo with transparency for a clean look
+  windows:
+    generate: true
+    image_path: "assets/icon/icon_desktop.png"
 
 # The following section is specific to Flutter packages.
 flutter:
