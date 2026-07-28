@@ -1,6 +1,8 @@
+import 'package:NoJob/features/home/data/scrapers/base_scrapper.dart';
 import 'package:NoJob/features/home/domain/job_interface.dart';
 import 'package:NoJob/features/home/presentation/providers/home_provider.dart';
 import 'package:NoJob/features/logs/presentation/providers/log_provider.dart';
+import 'package:NoJob/features/logs/presentation/verification_webview.dart';
 import 'package:NoJob/l10n/app_localizations.dart';
 import 'package:NoJob/shared/shared.dart';
 import 'package:flutter/material.dart';
@@ -81,23 +83,43 @@ class _AddJobDialogState extends ConsumerState<AddJobDialog> {
     if (!mounted) return;
 
     if (data != null) {
-      setState(() {
-        if (data.companyName.isNotEmpty)
-          _nameController.text = data.companyName;
-        if (data.title.isNotEmpty) _descController.text = data.title;
-      });
+      if (data.status == ScrapeStatus.verificationRequired) {
+        final success = await showDialog<bool>(
+          context: context,
+          builder: (context) => VerificationDialog(url: url),
+        );
+
+        if (success == true) {
+          // Retry fetching with new cookies
+          return _handleFetch();
+        }
+      } else if (data.status == ScrapeStatus.success) {
+        setState(() {
+          if (data.companyName.isNotEmpty) {
+            _nameController.text = data.companyName;
+          }
+          if (data.title.isNotEmpty) _descController.text = data.title;
+        });
+      } else {
+        _showErrorSnackBar();
+      }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context)!.fetchError),
-          backgroundColor: Colors.redAccent,
-          behavior: SnackBarBehavior.floating,
-          showCloseIcon: true,
-        ),
-      );
+      _showErrorSnackBar();
     }
 
     setState(() => _isFetching = false);
+  }
+
+  void _showErrorSnackBar() {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.fetchError),
+        backgroundColor: Colors.redAccent,
+        behavior: SnackBarBehavior.floating,
+        showCloseIcon: true,
+      ),
+    );
   }
 
   @override

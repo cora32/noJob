@@ -39,9 +39,10 @@ dependencies:
   sqflite: ^2.3.0
   path: ^1.9.0
   sqflite_common_ffi: ^2.3.0
-  sqlite3_flutter_libs: ^0.5.20
-  html: ^0.15.4
-  http: ^1.2.1
+  sqlite3_flutter_libs: ^0.5.42
+  html: ^0.15.6
+  http: ^1.6.0
+  flutter_inappwebview: ^6.0.0
 
   # The following adds the Cupertino Icons font to your application.
   cupertino_icons: ^1.0.8

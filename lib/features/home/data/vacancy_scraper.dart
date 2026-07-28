@@ -14,18 +14,20 @@ final vacancyScraperProvider = Provider(
 
 class CompositeVacancyScraper extends VacancyScrapper {
   @override
-  Future<ScrapedVacancy?> fetchVacancy(String url) async {
+  Future<ScrapedVacancy?> fetchVacancy(String url,
+      {Map<String, String>? cookies}) async {
     if (HHVacancyScraper.canHandle(url)) {
-      return await HHVacancyScraper().fetchVacancy(url);
+      return await HHVacancyScraper().fetchVacancy(url, cookies: cookies);
     }
     if (InVacancyScraper.canHandle(url)) {
-      return await InVacancyScraper().fetchVacancy(url);
+      return await InVacancyScraper().fetchVacancy(url, cookies: cookies);
     }
     if (GlassdoorVacancyScraper.canHandle(url)) {
-      return await GlassdoorVacancyScraper().fetchVacancy(url);
+      return await GlassdoorVacancyScraper().fetchVacancy(
+          url, cookies: cookies);
     }
     if (IndeedVacancyScraper.canHandle(url)) {
-      return await IndeedVacancyScraper().fetchVacancy(url);
+      return await IndeedVacancyScraper().fetchVacancy(url, cookies: cookies);
     }
     return null;
   }

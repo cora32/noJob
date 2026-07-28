@@ -11,19 +11,32 @@ class HHVacancyScraper extends VacancyScrapper {
   static bool canHandle(String url) => url.toLowerCase().contains('hh.ru');
 
   @override
-  Future<ScrapedVacancy?> fetchVacancy(String url) async {
-    try {
+  Future<ScrapedVacancy?> fetchVacancy(
+    String url, {
+    Map<String, String>? cookies,
+  }) async try {
+      final headers = {
+        'User-Agent': _userAgent,
+        'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8',
+      };
+
+      if (cookies != null && cookies.isNotEmpty) {
+        headers['Cookie'] =
+            cookies.entries.map((e) => '${e.key}=${e.value}').join('; ');
+      }
+
       final response = await http.get(
         Uri.parse(url),
-        headers: {
-          'User-Agent': _userAgent,
-          'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8',
-        },
+        headers: headers,
       );
+
+      if (response.statusCode == 403) {
+        return ScrapedVacancy.verificationRequired();
+      }
 
       if (response.statusCode != 200) {
         "HH Status: ${response.statusCode}".e;
-        return null;
+        return ScrapedVacancy.error();
       }
 
       final document = parse(response.body);
@@ -35,17 +48,15 @@ class HHVacancyScraper extends VacancyScrapper {
         'a[data-qa="vacancy-company-name"]',
       );
 
-      "titleElement: ${titleElement?.text.trim()}; companyElement: ${companyElement?.text.trim()}"
-          .e;
-
-      if (titleElement == null && companyElement == null) return null;
+      if (titleElement == null && companyElement == null)
+        return ScrapedVacancy.error();
 
       return ScrapedVacancy(
         title: titleElement?.text.trim() ?? '',
         companyName: companyElement?.text.trim() ?? '',
       );
     } catch (e) {
-      return null;
+      return ScrapedVacancy.error();
     }
   }
 }

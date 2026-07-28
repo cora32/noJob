@@ -5,6 +5,7 @@ import 'package:NoJob/features/home/domain/job_interface.dart';
 import 'package:NoJob/features/home/presentation/providers/home_provider.dart';
 import 'package:NoJob/features/home/presentation/providers/job_repo_provider.dart';
 import 'package:NoJob/features/home/presentation/providers/line_chart_provider.dart';
+import 'package:NoJob/features/logs/presentation/providers/cookie_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class LogsState {
@@ -59,8 +60,9 @@ class LogsNotifier extends AsyncNotifier<LogsState> {
   }
 
   Future<ScrapedVacancy?> fetchVacancy(String url) async {
+    final cookies = ref.read(cookieProvider.notifier).getCookiesForUrl(url);
     final scraper = ref.read(vacancyScraperProvider);
-    return await scraper.fetchVacancy(url);
+    return await scraper.fetchVacancy(url, cookies: cookies);
   }
 }
 
