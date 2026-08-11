@@ -14,7 +14,8 @@ class HHVacancyScraper extends VacancyScrapper {
   Future<ScrapedVacancy?> fetchVacancy(
     String url, {
     Map<String, String>? cookies,
-  }) async try {
+      }) async {
+    try {
       final headers = {
         'User-Agent': _userAgent,
         'Accept-Language': 'ru-RU,ru;q=0.9,en-US;q=0.8',
@@ -48,8 +49,9 @@ class HHVacancyScraper extends VacancyScrapper {
         'a[data-qa="vacancy-company-name"]',
       );
 
-      if (titleElement == null && companyElement == null)
+      if (titleElement == null && companyElement == null) {
         return ScrapedVacancy.error();
+      }
 
       return ScrapedVacancy(
         title: titleElement?.text.trim() ?? '',

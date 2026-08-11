@@ -14,24 +14,23 @@ class IndeedVacancyScraper extends VacancyScrapper {
   Future<ScrapedVacancy?> fetchVacancy(
     String url, {
     Map<String, String>? cookies,
-  }) async try {
+  }) async {
+    try {
       final headers = {
         'User-Agent': _userAgent,
         'Accept-Language': 'en-US,en;q=0.9',
         'Accept':
-        'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+            'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
         'Referer': 'https://www.indeed.com/',
       };
 
       if (cookies != null && cookies.isNotEmpty) {
-        headers['Cookie'] =
-            cookies.entries.map((e) => '${e.key}=${e.value}').join('; ');
+        headers['Cookie'] = cookies.entries
+            .map((e) => '${e.key}=${e.value}')
+            .join('; ');
       }
 
-      final response = await http.get(
-        Uri.parse(url),
-        headers: headers,
-      );
+      final response = await http.get(Uri.parse(url), headers: headers);
 
       if (response.statusCode == 403) {
         return ScrapedVacancy.verificationRequired();
@@ -53,8 +52,9 @@ class IndeedVacancyScraper extends VacancyScrapper {
           ) ??
           document.querySelector('[data-company-name="true"]');
 
-      if (titleElement == null && companyElement == null)
+      if (titleElement == null && companyElement == null) {
         return ScrapedVacancy.error();
+      }
 
       return ScrapedVacancy(
         title: titleElement?.text.trim() ?? '',

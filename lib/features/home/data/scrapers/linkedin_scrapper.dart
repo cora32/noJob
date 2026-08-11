@@ -15,7 +15,8 @@ class InVacancyScraper extends VacancyScrapper {
   Future<ScrapedVacancy?> fetchVacancy(
     String url, {
     Map<String, String>? cookies,
-  }) async try {
+      }) async {
+    try {
       final headers = {
         'User-Agent': _userAgent,
         'Accept-Language': 'en-US,en;q=0.9',
@@ -54,8 +55,9 @@ class InVacancyScraper extends VacancyScrapper {
           document.querySelector('a.topcard__org-name-link') ??
           document.querySelector('a[class*="topcard__org-name-link"]');
 
-      if (titleElement == null && companyElement == null)
+      if (titleElement == null && companyElement == null) {
         return ScrapedVacancy.error();
+      }
 
       return ScrapedVacancy(
         title: titleElement?.text.trim() ?? '',
