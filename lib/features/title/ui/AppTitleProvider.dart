@@ -30,6 +30,39 @@ class ColorTheme {
   const ColorTheme({required this.backgroundColor, required this.accentColor});
 }
 
+class NoJobThemeExtension extends ThemeExtension<NoJobThemeExtension> {
+  final Color backgroundColor;
+  final Color accentColor;
+
+  const NoJobThemeExtension({
+    required this.backgroundColor,
+    required this.accentColor,
+  });
+
+  @override
+  ThemeExtension<NoJobThemeExtension> copyWith({
+    Color? backgroundColor,
+    Color? accentColor,
+  }) {
+    return NoJobThemeExtension(
+      backgroundColor: backgroundColor ?? this.backgroundColor,
+      accentColor: accentColor ?? this.accentColor,
+    );
+  }
+
+  @override
+  ThemeExtension<NoJobThemeExtension> lerp(
+    ThemeExtension<NoJobThemeExtension>? other,
+    double t,
+  ) {
+    if (other is! NoJobThemeExtension) return this;
+    return NoJobThemeExtension(
+      backgroundColor: Color.lerp(backgroundColor, other.backgroundColor, t)!,
+      accentColor: Color.lerp(accentColor, other.accentColor, t)!,
+    );
+  }
+}
+
 class AppTitleState {
   final NoJobThemes selectedTheme;
 

@@ -57,7 +57,7 @@ class AppTitle extends StatelessWidget {
                             .selectTheme(theme),
                         child: ColorSelector(
                           colors: [
-                            theme.colorTheme.colorBackground,
+                            theme.colorTheme.backgroundColor,
                             theme.colorTheme.accentColor,
                           ],
                           isSelected: isSelected,
@@ -103,7 +103,13 @@ class ColorSelector extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: isSelected
-            ? Border.all(color: Colors.blue, width: 2)
+            ? Border.all(
+          color: Theme
+              .of(context)
+              .extension<NoJobThemeExtension>()
+              ?.accentColor ?? Colors.blue,
+          width: 2,
+        )
             : Border.all(color: Colors.transparent, width: 2),
       ),
       padding: const EdgeInsets.all(2),

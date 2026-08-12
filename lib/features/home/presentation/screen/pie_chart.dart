@@ -183,7 +183,6 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(16)),
         ),
-        color: Colors.white,
         child: Padding(
           padding: const EdgeInsets.only(
             top: 16,

@@ -17,7 +17,6 @@ class LogWidget extends ConsumerWidget {
 
     return Card(
       elevation: 4,
-      color: Colors.white,
       child: SizedBox(
         width: 550,
         child: Padding(
