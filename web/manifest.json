@@ -1,6 +1,6 @@
 {
-    "name": "nojob",
-    "short_name": "nojob",
+  "name": "noJob",
+  "short_name": "noJob",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
