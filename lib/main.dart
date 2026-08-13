@@ -37,7 +37,7 @@ class MyApp extends ConsumerWidget {
           debugShowCheckedModeBanner: false,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          onGenerateTitle: (context) => AppLocalizations.of(context)!.appName,
+          onGenerateTitle: (context) => context.res.appName,
           theme: ThemeData(
             brightness: colors.backgroundColor == Colors.black
                 ? Brightness.dark

@@ -1,4 +1,4 @@
-import 'package:NoJob/l10n/app_localizations.dart';
+import 'package:NoJob/shared/extensions.dart';
 import 'package:flutter/material.dart';
 
 class InfoPanel extends StatelessWidget {
@@ -31,7 +31,7 @@ class InfoPanel extends StatelessWidget {
                 ),
               ),
               TextSpan(
-                text: '\n${AppLocalizations.of(context)!.rejections}',
+                text: '\n${context.res.rejections}',
                 style: const TextStyle(
                     fontSize: 15, fontWeight: FontWeight.normal),
               ),
@@ -51,7 +51,7 @@ class InfoPanel extends StatelessWidget {
                 ),
               ),
               TextSpan(
-                text: '\n${AppLocalizations.of(context)!.total}',
+                text: '\n${context.res.total}',
                 style: const TextStyle(
                     fontSize: 15, fontWeight: FontWeight.normal),
               ),
@@ -72,7 +72,7 @@ class InfoPanel extends StatelessWidget {
                 ),
               ),
               TextSpan(
-                text: '\n${AppLocalizations.of(context)!.offers}',
+                text: '\n${context.res.offers}',
                 style: const TextStyle(
                     fontSize: 15, fontWeight: FontWeight.normal),
               ),

@@ -2,7 +2,7 @@ import 'dart:math';
 
 import 'package:NoJob/features/home/presentation/providers/home_provider.dart';
 import 'package:NoJob/features/home/presentation/providers/line_chart_provider.dart';
-import 'package:NoJob/l10n/app_localizations.dart';
+import 'package:NoJob/shared/extensions.dart';
 import 'package:NoJob/shared/shared.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -69,7 +69,7 @@ class LineChartCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              AppLocalizations.of(context)!.appsToday(applicationsToday),
+              context.res.appsToday(applicationsToday),
               style: labelStyle,
             ),
             const SizedBox(height: 16),

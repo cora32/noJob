@@ -3,7 +3,7 @@ import 'package:NoJob/features/home/domain/job_interface.dart';
 import 'package:NoJob/features/home/presentation/providers/home_provider.dart';
 import 'package:NoJob/features/logs/presentation/providers/log_provider.dart';
 import 'package:NoJob/features/logs/presentation/verification_webview.dart';
-import 'package:NoJob/l10n/app_localizations.dart';
+import 'package:NoJob/shared/extensions.dart';
 import 'package:NoJob/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,7 +24,7 @@ class LogWidget extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(AppLocalizations.of(context)!.logs, style: labelStyle),
+              Text(context.res.logs, style: labelStyle),
               const SizedBox(height: 16),
               const Expanded(child: LogsPanel()),
               const SizedBox(height: 16),
@@ -38,7 +38,7 @@ class LogWidget extends ConsumerWidget {
                         builder: (context) => const AddJobDialog(),
                       );
                     },
-                    child: Text(AppLocalizations.of(context)!.add),
+                    child: Text(context.res.add),
                   ),
                 ],
               ),
@@ -113,7 +113,7 @@ class _AddJobDialogState extends ConsumerState<AddJobDialog> {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(AppLocalizations.of(context)!.fetchError),
+        content: Text(context.res.fetchError),
         backgroundColor: Colors.redAccent,
         behavior: SnackBarBehavior.floating,
         showCloseIcon: true,
@@ -123,7 +123,7 @@ class _AddJobDialogState extends ConsumerState<AddJobDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.res;
     return AlertDialog(
       backgroundColor: Colors.white,
       title: Text(l10n.addJob),
@@ -147,7 +147,7 @@ class _AddJobDialogState extends ConsumerState<AddJobDialog> {
                 visualDensity: VisualDensity.compact,
                 icon: const Icon(Icons.download),
                 onPressed: _handleFetch,
-                tooltip: AppLocalizations.of(context)!.fetch_details,
+                tooltip: context.res.fetch_details,
               ),
             ),
             onSubmitted: (_) => _handleFetch(),
@@ -205,7 +205,7 @@ class LogsPanel extends ConsumerWidget {
           final logs = state.logs;
 
           if (logs.isEmpty) {
-            return Center(child: Text(AppLocalizations.of(context)!.noLogs));
+            return Center(child: Text(context.res.noLogs));
           } else {
             return ListView.builder(
               itemCount: logs.length,

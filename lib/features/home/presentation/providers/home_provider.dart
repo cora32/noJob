@@ -1,5 +1,4 @@
 import 'package:NoJob/features/home/presentation/providers/job_repo_provider.dart';
-import 'package:NoJob/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -86,7 +85,7 @@ enum ApplicationType {
   }
 
   String localizedName(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+    final l10n = context.res;
     return switch (this) {
       ApplicationType.pending => l10n.pending,
       ApplicationType.offer => l10n.offer,
