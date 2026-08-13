@@ -41,7 +41,9 @@ class InfoPanel extends StatelessWidget {
         RichText(
           textAlign: TextAlign.center,
           text: TextSpan(
-            style: const TextStyle(color: Colors.black, fontSize: 14),
+            style: TextStyle(color: context.appTheme.colorTheme.isDark
+                ? Colors.white70
+                : Colors.black87, fontSize: 14),
             children: [
               TextSpan(
                 text: '$total',

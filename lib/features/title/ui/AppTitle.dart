@@ -104,12 +104,7 @@ class ColorSelector extends StatelessWidget {
         shape: BoxShape.circle,
         border: isSelected
             ? Border.all(
-          color: Theme
-              .of(context)
-              .extension<NoJobThemeExtension>()
-              ?.accentColor ?? Colors.blue,
-          width: 2,
-        )
+            color: context.appTheme.colorTheme.accentColor, width: 2)
             : Border.all(color: Colors.transparent, width: 2),
       ),
       padding: const EdgeInsets.all(2),

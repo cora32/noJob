@@ -31,7 +31,9 @@ class _VerificationDialogState extends ConsumerState<VerificationDialog> {
               children: [
                 const Text(
                   "Verification Required",
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close),

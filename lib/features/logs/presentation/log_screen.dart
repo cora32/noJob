@@ -125,7 +125,6 @@ class _AddJobDialogState extends ConsumerState<AddJobDialog> {
   Widget build(BuildContext context) {
     final l10n = context.res;
     return AlertDialog(
-      backgroundColor: Colors.white,
       title: Text(l10n.addJob),
       content: Column(
         mainAxisSize: MainAxisSize.min,
@@ -197,7 +196,9 @@ class LogsPanel extends ConsumerWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Color(0xffefefef),
+        color: context.theme.brightness == Brightness.dark
+            ? Colors.black26
+            : const Color(0xffefefef),
         borderRadius: BorderRadius.circular(12),
       ),
       child: state.when(
@@ -246,7 +247,6 @@ class LogItem extends StatelessWidget {
           const SizedBox(width: 4),
           Expanded(
             child: Card(
-              color: Colors.white,
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   vertical: 8.0,
@@ -327,7 +327,12 @@ class StateToggle extends ConsumerWidget {
             isDense: true,
             borderRadius: BorderRadius.circular(4),
             icon: const Icon(Icons.arrow_drop_down, size: 16),
-            style: const TextStyle(fontSize: 12, color: Colors.black),
+            style: TextStyle(
+              fontSize: 12,
+              color: context.theme.brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
+            ),
             onChanged: (String? newValue) {
               if (newValue != null && item.id != null) {
                 ref

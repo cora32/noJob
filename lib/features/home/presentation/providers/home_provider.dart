@@ -1,4 +1,5 @@
 import 'package:NoJob/features/home/presentation/providers/job_repo_provider.dart';
+import 'package:NoJob/shared/extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

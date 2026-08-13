@@ -83,7 +83,8 @@ class LineChartCard extends StatelessWidget {
                     LineChartData(
                       lineTouchData: LineTouchData(
                         touchTooltipData: LineTouchTooltipData(
-                          getTooltipColor: (touchedSpot) => Colors.white,
+                          getTooltipColor: (touchedSpot) =>
+                          context.theme.cardColor,
                           tooltipBorder: BorderSide(
                             color: Colors.grey.withValues(alpha: 0.3),
                             width: 1,
