@@ -1,8 +1,8 @@
 import 'package:NoJob/features/home/presentation/screen/chart_widget.dart';
 import 'package:NoJob/features/home/presentation/screen/pie_chart.dart';
-import 'package:NoJob/features/logs/presentation/log_screen.dart';
 import 'package:NoJob/features/title/ui/AppTitle.dart';
 import 'package:NoJob/features/title/ui/AppTitleProvider.dart';
+import 'package:NoJob/features/url_input/presentation/UrlFieldWidget.dart';
 import 'package:NoJob/l10n/app_localizations.dart';
 import 'package:NoJob/shared/extensions.dart';
 import 'package:NoJob/shared/persistence/storage_service.dart';
@@ -96,7 +96,11 @@ class ScaffoldWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const SizedBox(height: 64),
-            const LineChartWidget(),
+
+            // const LogWidget(),
+            const UrlFieldWidget(),
+            // const LogWidget2(),
+
             const SizedBox(height: 32),
             SizedBox(
               height: 350,
@@ -106,7 +110,7 @@ class ScaffoldWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const LogWidget(),
+                  const LineChartWidget(),
                   const SizedBox(width: 32),
                   const PieWidget(),
                 ],

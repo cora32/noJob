@@ -30,7 +30,7 @@ class ArcData {
   ArcData.empty() : total = 0.0, count = 0.0, type = ApplicationType.pending;
 }
 
-enum ApplicationSource {
+enum SupportedSite {
   hh(nameCode: "hh", displayCode: "HH", color: Color(0xFFFF0000)),
   linkedin(nameCode: "linkedin", displayCode: "IN", color: Color(0xFF0051FF)),
   indeed(nameCode: "indeed", displayCode: "ID", color: Color(0xFFD3FF35)),
@@ -42,26 +42,26 @@ enum ApplicationSource {
   final String nameCode;
   final String displayCode;
 
-  const ApplicationSource({
+  const SupportedSite({
     required this.color,
     required this.nameCode,
     required this.displayCode,
   });
 
-  static ApplicationSource fromNameCode(String code) {
+  static SupportedSite fromNameCode(String code) {
     return values.firstWhere(
       (e) => e.nameCode == code,
-      orElse: () => ApplicationSource.unknown,
+      orElse: () => SupportedSite.unknown,
     );
   }
 
-  static ApplicationSource fromLink(String link) {
+  static SupportedSite fromLink(String link) {
     final lowerLink = link.toLowerCase();
-    if (lowerLink.contains('hh.ru')) return ApplicationSource.hh;
-    if (lowerLink.contains('linkedin.com')) return ApplicationSource.linkedin;
-    if (lowerLink.contains('indeed.com')) return ApplicationSource.indeed;
-    if (lowerLink.contains('glassdoor.com')) return ApplicationSource.glassdoor;
-    return ApplicationSource.unknown;
+    if (lowerLink.contains('hh.ru')) return SupportedSite.hh;
+    if (lowerLink.contains('linkedin.com')) return SupportedSite.linkedin;
+    if (lowerLink.contains('indeed.com')) return SupportedSite.indeed;
+    if (lowerLink.contains('glassdoor.com')) return SupportedSite.glassdoor;
+    return SupportedSite.unknown;
   }
 }
 

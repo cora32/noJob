@@ -30,7 +30,7 @@ class LineChartWidget extends ConsumerWidget {
 }
 
 class LineChartCard extends StatelessWidget {
-  final Map<ApplicationSource, List<FlSpot>> sourceData;
+  final Map<SupportedSite, List<FlSpot>> sourceData;
   final int applicationsToday;
 
   const LineChartCard({
@@ -73,12 +73,13 @@ class LineChartCard extends StatelessWidget {
               style: labelStyle,
             ),
             const SizedBox(height: 16),
-            SizedBox(
+            Container(
               height: 200,
+              padding: EdgeInsets.only(right: 32),
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: SizedBox(
-                  width: (firstSpots.length) * 60.0,
+                  width: 500,
                   child: LineChart(
                     LineChartData(
                       lineTouchData: LineTouchData(
@@ -224,8 +225,8 @@ class LegendWidget extends StatelessWidget {
     return Wrap(
       spacing: 16,
       runSpacing: 8,
-      children: ApplicationSource.values
-          .where((s) => s != ApplicationSource.none)
+      children: SupportedSite.values
+          .where((s) => s != SupportedSite.none)
           .map((source) => _LegendItem(source: source))
           .toList(),
     );
@@ -233,7 +234,7 @@ class LegendWidget extends StatelessWidget {
 }
 
 class _LegendItem extends StatelessWidget {
-  final ApplicationSource source;
+  final SupportedSite source;
 
   const _LegendItem({required this.source});
 

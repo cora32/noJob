@@ -27,5 +27,9 @@
        "count": {"type": "int"}
     }
   },
-  "fetchError": "Failed to fetch vacancy details. Please check the link or enter details manually."
+  "fetchError": "Failed to fetch vacancy details. Please check the link or enter details manually.",
+  "inputLink": "Enter vacancy link",
+  "invalidLink": "Invalid link",
+  "paste": "PASTE",
+  "unknownLink": "Unknown link"
 }

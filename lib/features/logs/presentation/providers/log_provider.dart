@@ -30,7 +30,7 @@ class LogsNotifier extends AsyncNotifier<LogsState> {
       description: description,
       link: link,
       status: ApplicationType.pending.nameCode,
-      source: ApplicationSource.fromLink(link).nameCode,
+      source: SupportedSite.fromLink(link).nameCode,
     );
 
     final repo = ref.read(jobRepoProvider);

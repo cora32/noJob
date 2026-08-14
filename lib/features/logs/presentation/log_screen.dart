@@ -259,14 +259,14 @@ class LogItem extends StatelessWidget {
                       width: 24,
                       height: 24,
                       decoration: BoxDecoration(
-                        color: ApplicationSource
+                        color: SupportedSite
                             .fromNameCode(item.source)
                             .color,
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Center(
                         child: Text(
-                          ApplicationSource
+                          SupportedSite
                               .fromNameCode(item.source)
                               .displayCode,
                           style: const TextStyle(

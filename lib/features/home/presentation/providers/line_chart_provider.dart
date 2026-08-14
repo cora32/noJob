@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class LineChartState {
   final int applicationsToday;
-  final Map<ApplicationSource, List<FlSpot>> sourceData;
+  final Map<SupportedSite, List<FlSpot>> sourceData;
 
   LineChartState({required this.sourceData, required this.applicationsToday});
 
@@ -30,11 +30,11 @@ class LineChartNotifier extends AsyncNotifier<LineChartState> {
       }
     }
 
-    final Map<ApplicationSource, List<FlSpot>> sourceData = {};
+    final Map<SupportedSite, List<FlSpot>> sourceData = {};
 
     // Process each relevant source
-    for (var source in ApplicationSource.values) {
-      if (source == ApplicationSource.none) continue;
+    for (var source in SupportedSite.values) {
+      if (source == SupportedSite.none) continue;
 
       final dataMap = <DateTime, int>{};
       // Initialize map with last 14 days for this source
