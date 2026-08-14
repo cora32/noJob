@@ -17,6 +17,13 @@ class _VerificationDialogState extends ConsumerState<VerificationDialog> {
   final GlobalKey webViewKey = GlobalKey();
   InAppWebViewController? webViewController;
   CookieManager cookieManager = CookieManager.instance();
+  bool _isPopping = false;
+
+  void _safePop(bool result) {
+    if (_isPopping || !mounted) return;
+    _isPopping = true;
+    Navigator.of(context).pop(result);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +44,7 @@ class _VerificationDialogState extends ConsumerState<VerificationDialog> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.pop(context, false),
+                  onPressed: () => _safePop(false),
                 ),
                 TextButton(
                   onPressed: () => _completeVerification(webViewController),
@@ -61,7 +68,7 @@ class _VerificationDialogState extends ConsumerState<VerificationDialog> {
                 webViewController = controller;
               },
               onLoadStop: (controller, url) async {
-                if (url == null) return;
+                if (url == null || _isPopping) return;
 
                 // Check for common job site indicators
                 final result = await controller.evaluateJavascript(
@@ -90,7 +97,7 @@ class _VerificationDialogState extends ConsumerState<VerificationDialog> {
   }
 
   Future<void> _completeVerification(InAppWebViewController? controller) async {
-    if (controller == null) return;
+    if (controller == null || _isPopping) return;
 
     final url = await controller.getUrl();
     if (url == null) return;
@@ -104,7 +111,7 @@ class _VerificationDialogState extends ConsumerState<VerificationDialog> {
     if (cookieMap.isNotEmpty) {
       final domain = Uri.parse(widget.url).host;
       ref.read(cookieProvider.notifier).updateCookies(domain, cookieMap);
-      if (mounted) Navigator.pop(context, true);
+      _safePop(true);
     }
   }
 }

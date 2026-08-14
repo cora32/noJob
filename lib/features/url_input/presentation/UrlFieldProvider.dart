@@ -48,12 +48,12 @@ class UrlFieldNotifier extends AsyncNotifier<UrlFieldState> {
     return SupportedSite.fromLink(url) != SupportedSite.unknown;
   }
 
-  Future<void> parse(String url) async {
+  Future<UrlFieldState> parse(String url) async {
     state = const AsyncData(UrlFieldLoading());
 
     if (!validateUrl(url)) {
       state = const AsyncData(UrlFieldError("Invalid URL"));
-      return;
+      return state.value!;
     }
 
     final logNotifier = ref.read(logsProvider.notifier);
@@ -61,16 +61,24 @@ class UrlFieldNotifier extends AsyncNotifier<UrlFieldState> {
 
     if (result == null) {
       state = const AsyncData(UrlFieldError("Parse error"));
-      return;
+      return state.value!;
     }
 
     "[UrlFieldProvider] Fetch result: ${result.status}".e;
 
     if (result.status == ScrapeStatus.success) {
+      final title = result.title;
+      final description = result.companyName;
+      logNotifier.addJob(title, description, url);
+
       state = const AsyncData(UrlFieldSuccess());
+    } else if (result.status == ScrapeStatus.verificationRequired) {
+      state = const AsyncData(VerificationRequired());
     } else {
       state = const AsyncData(UrlFieldError("Failed to fetch vacancy"));
     }
+
+    return state.value!;
   }
 
   void reset() {

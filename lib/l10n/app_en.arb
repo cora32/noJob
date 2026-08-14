@@ -31,5 +31,6 @@
   "inputLink": "Enter vacancy link",
   "invalidLink": "Invalid link",
   "paste": "PASTE",
+  "verificationRequired": "Verification required.",
   "unknownLink": "Unknown link"
 }

@@ -17,6 +17,8 @@ class _UrlFieldWidgetState extends ConsumerState<UrlFieldWidget> {
 
   void _showVerificationDialog() async {
     final url = _urlController.text;
+    "_showVerificationDialog is called: $url".e;
+
     final result = await showDialog(
       context: context,
       builder: (context) => VerificationDialog(url: url),
@@ -32,7 +34,20 @@ class _UrlFieldWidgetState extends ConsumerState<UrlFieldWidget> {
     "_onTextInput called: ${_urlController.text}".e;
 
     final notifier = ref.read(urlFieldProvider.notifier);
-    await notifier.parse(_urlController.text);
+    final result = await notifier.parse(_urlController.text);
+
+    "mounted: ${mounted}".e;
+    if (!mounted) return;
+
+    "_onTextInput fetch result: ${result}".e;
+    if (result is UrlFieldError) {
+      if (result.errorMessage != "Invalid URL") {
+        context.showErrorSnackBar(result.errorMessage);
+      }
+    } else if (result is VerificationRequired) {
+      context.showErrorSnackBar(context.res.verificationRequired);
+      _showVerificationDialog();
+    }
   }
 
   @override
@@ -60,7 +75,7 @@ class _UrlFieldWidgetState extends ConsumerState<UrlFieldWidget> {
 
         return Container(
           alignment: Alignment.topCenter,
-          height: 150,
+          height: 90,
           padding: const EdgeInsets.symmetric(horizontal: 32),
           child: Stack(
             alignment: Alignment.center,
@@ -70,7 +85,11 @@ class _UrlFieldWidgetState extends ConsumerState<UrlFieldWidget> {
                 controller: _urlController,
                 onSubmitted: (_) => _onTextInput(),
                 onChanged: (_) {
-                  _onTextInput();
+                  if (_urlController.text.isNotEmpty) {
+                    _onTextInput();
+                  } else {
+                    ref.read(urlFieldProvider.notifier).reset();
+                  }
                 },
                 keyboardType: TextInputType.url,
                 textInputAction: TextInputAction.go,

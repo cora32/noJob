@@ -26,4 +26,19 @@ extension ContextExt on BuildContext {
 
   NoJobThemeExtension get appTheme =>
       Theme.of(this).extension<NoJobThemeExtension>()!;
+
+  ScaffoldMessengerState get toaster => ScaffoldMessenger.of(this);
+
+  void showErrorSnackBar(String textCode) {
+    if (!mounted) return;
+
+    toaster.showSnackBar(
+      SnackBar(
+        content: Text(textCode),
+        backgroundColor: Colors.redAccent,
+        behavior: SnackBarBehavior.floating,
+        showCloseIcon: true,
+      ),
+    );
+  }
 }

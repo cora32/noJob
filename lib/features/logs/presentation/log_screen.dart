@@ -100,25 +100,13 @@ class _AddJobDialogState extends ConsumerState<AddJobDialog> {
           if (data.title.isNotEmpty) _descController.text = data.title;
         });
       } else {
-        _showErrorSnackBar();
+        context.showErrorSnackBar(context.res.fetchError);
       }
     } else {
-      _showErrorSnackBar();
+      context.showErrorSnackBar(context.res.fetchError);
     }
 
     setState(() => _isFetching = false);
-  }
-
-  void _showErrorSnackBar() {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(context.res.fetchError),
-        backgroundColor: Colors.redAccent,
-        behavior: SnackBarBehavior.floating,
-        showCloseIcon: true,
-      ),
-    );
   }
 
   @override
@@ -126,41 +114,44 @@ class _AddJobDialogState extends ConsumerState<AddJobDialog> {
     final l10n = context.res;
     return AlertDialog(
       title: Text(l10n.addJob),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          TextField(
-            controller: _linkController,
-            decoration: InputDecoration(
-              labelText: l10n.link,
-              suffixIcon: _isFetching
-                  ? const SizedBox(
-                width: 20,
-                height: 20,
-                child: Padding(
-                  padding: EdgeInsets.all(12.0),
-                  child: CircularProgressIndicator(strokeWidth: 2),
+      content: SizedBox(
+        width: 400,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _linkController,
+              decoration: InputDecoration(
+                labelText: l10n.link,
+                suffixIcon: _isFetching
+                    ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: Padding(
+                    padding: EdgeInsets.all(12.0),
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                )
+                    : IconButton(
+                  visualDensity: VisualDensity.compact,
+                  icon: const Icon(Icons.download),
+                  onPressed: _handleFetch,
+                  tooltip: context.res.fetch_details,
                 ),
-              )
-                  : IconButton(
-                visualDensity: VisualDensity.compact,
-                icon: const Icon(Icons.download),
-                onPressed: _handleFetch,
-                tooltip: context.res.fetch_details,
               ),
+              onSubmitted: (_) => _handleFetch(),
             ),
-            onSubmitted: (_) => _handleFetch(),
-          ),
-          const SizedBox(height: 8),
-          TextField(
-            controller: _nameController,
-            decoration: InputDecoration(labelText: l10n.company),
-          ),
-          TextField(
-            controller: _descController,
-            decoration: InputDecoration(labelText: l10n.description),
-          ),
-        ],
+            const SizedBox(height: 8),
+            TextField(
+              controller: _nameController,
+              decoration: InputDecoration(labelText: l10n.company),
+            ),
+            TextField(
+              controller: _descController,
+              decoration: InputDecoration(labelText: l10n.description),
+            ),
+          ],
+        ),
       ),
       actions: [
         TextButton(
@@ -172,7 +163,9 @@ class _AddJobDialogState extends ConsumerState<AddJobDialog> {
               ? null
               : () async {
             if (_nameController.text.isNotEmpty) {
-              await ref.read(logsProvider.notifier).addJob(
+              await ref
+                  .read(logsProvider.notifier)
+                  .addJob(
                 _nameController.text,
                 _descController.text,
                 _linkController.text,
@@ -210,10 +203,16 @@ class LogsPanel extends ConsumerWidget {
           } else {
             return ListView.builder(
               itemCount: logs.length,
+              padding: EdgeInsetsGeometry.symmetric(
+                  vertical: 16.0, horizontal: 16),
               itemBuilder: (BuildContext context, int index) {
                 final item = logs[index];
 
-                return LogItem(item: item, key: ValueKey(item.id));
+                return Container(
+                    padding: EdgeInsetsGeometry.only(left: 16),
+                    color: index % 2 == 0 ? Colors.transparent : Colors
+                        .grey[850],
+                    child: LogItem(item: item, key: ValueKey(item.id)));
               },
             );
           }
@@ -236,9 +235,9 @@ class LogItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      child: Row(
+    return Row(
+      mainAxisSize: MainAxisSize.max,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             item.id.toString(),
@@ -246,7 +245,6 @@ class LogItem extends StatelessWidget {
           ),
           const SizedBox(width: 4),
           Expanded(
-            child: Card(
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   vertical: 8.0,
@@ -285,7 +283,9 @@ class LogItem extends StatelessWidget {
                           Text(
                             item.title,
                             style: const TextStyle(
-                                fontSize: 12, fontWeight: FontWeight.bold),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           Text(
                             item.description,
@@ -302,10 +302,9 @@ class LogItem extends StatelessWidget {
                   ],
                 ),
               ),
-            ),
           ),
         ],
-      ),
+
     );
   }
 }
@@ -364,8 +363,7 @@ class StateToggle extends ConsumerWidget {
         const SizedBox(width: 4),
         IconButton(
           icon: const Icon(Icons.close, size: 16, color: Colors.red),
-          padding: EdgeInsets.zero,
-          constraints: const BoxConstraints(),
+          padding: EdgeInsets.all(8.0),
           onPressed: () {
             showDialog(
               context: context,

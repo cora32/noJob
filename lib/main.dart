@@ -1,5 +1,6 @@
 import 'package:NoJob/features/home/presentation/screen/chart_widget.dart';
 import 'package:NoJob/features/home/presentation/screen/pie_chart.dart';
+import 'package:NoJob/features/logs/presentation/log_widget2.dart';
 import 'package:NoJob/features/title/ui/AppTitle.dart';
 import 'package:NoJob/features/title/ui/AppTitleProvider.dart';
 import 'package:NoJob/features/url_input/presentation/UrlFieldWidget.dart';
@@ -98,8 +99,9 @@ class ScaffoldWidget extends StatelessWidget {
             const SizedBox(height: 64),
 
             // const LogWidget(),
+            const LogWidget2(),
+            const SizedBox(height: 8),
             const UrlFieldWidget(),
-            // const LogWidget2(),
 
             const SizedBox(height: 32),
             SizedBox(
