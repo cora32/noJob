@@ -26,6 +26,7 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
 
   List<ArcData> _previousData = [];
   List<ArcData> _currentData = [];
+  List<ApplicationType> _allTypes = []; // Pre-calculated union of types
 
   late AnimationController _controller;
   late Animation<double> _animation;
@@ -66,11 +67,15 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
   Widget build(BuildContext context) {
     ref.listen(homeProvider, (previous, next) {
       if (next is AsyncData && next.value != null && mounted) {
+        final sortedList = _sortArcData(next.value!.arcDataList);
         setState(() {
-          if (_currentData.isNotEmpty) {
-            _previousData = _currentData;
-          }
-          _currentData = next.value!.arcDataList;
+          _previousData = _currentData.isNotEmpty
+              ? _currentData
+              : sortedList
+                    .map((d) => ArcData(total: d.total, count: 0, type: d.type))
+                    .toList();
+          _currentData = sortedList;
+          _allTypes = _computeAllTypes(_previousData, _currentData);
         });
         _drawController.forward(from: 0.0);
       }
@@ -80,29 +85,34 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
 
     final chartWidget = state.when(
       data: (homeState) {
-        if (_currentData.isEmpty && homeState.arcDataList.isNotEmpty) {
-          _currentData = homeState.arcDataList;
+        final sortedArcData = _sortArcData(homeState.arcDataList);
+
+        if (_currentData.isEmpty && sortedArcData.isNotEmpty) {
+          setState(() {
+            _currentData = sortedArcData;
+            _allTypes = _computeAllTypes([], _currentData);
+          });
           _drawController.forward(from: 0.0);
         }
 
-        final totalCount =
-        homeState.arcDataList.isNotEmpty ? homeState.arcDataList.first.total
-            .toInt() : 0;
-        final rejectionsCount = homeState.arcDataList
+        final totalCount = sortedArcData.isNotEmpty
+            ? sortedArcData.first.total.toInt()
+            : 0;
+        final rejectionsCount = sortedArcData
             .firstWhere(
               (e) => e.type == ApplicationType.rejected,
               orElse: () => ArcData.empty(),
             )
             .count
             .toInt();
-        final rejectedDetailedCount = homeState.arcDataList
+        final rejectedDetailedCount = sortedArcData
             .firstWhere(
               (e) => e.type == ApplicationType.rejectedDetailed,
               orElse: () => ArcData.empty(),
             )
             .count
             .toInt();
-        final offerCount = homeState.arcDataList
+        final offerCount = sortedArcData
             .firstWhere(
               (e) => e.type == ApplicationType.offer,
               orElse: () => ArcData.empty(),
@@ -114,7 +124,7 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
           onHover: (event) {
             final (index, center) = _hitTest(
               event.localPosition,
-              homeState.arcDataList,
+              sortedArcData,
             );
             if (index != _hoveredIndex) {
               setState(() {
@@ -150,6 +160,7 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
                       painter: ArcPainter(
                         getLocalizedName: (type) => type.localizedName(context),
                         items: animatedData,
+                        getArcDataById: (index) => sortedArcData[index],
                         hoveredCenter: _hoveredCenter,
                         hoveredIndex: _hoveredIndex,
                         extensionFactor: _animation.value,
@@ -201,9 +212,26 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
     );
   }
 
+  List<ArcData> _sortArcData(List<ArcData> data) {
+    // Sort based on the order defined in ApplicationType enum
+    final sorted = List<ArcData>.from(data);
+    sorted.sort((a, b) => a.type.index.compareTo(b.type.index));
+    return sorted;
+  }
+
+  List<ApplicationType> _computeAllTypes(
+    List<ArcData> prev,
+    List<ArcData> curr,
+  ) {
+    final types = {
+      ...prev.map((d) => d.type),
+      ...curr.map((d) => d.type),
+    }.toList();
+    types.sort((a, b) => a.index.compareTo(b.index));
+    return types}
+
   List<ArcData> _interpolateData(double t) {
     if (_previousData.isEmpty) {
-      // If no previous data, interpolate from 0 count
       return _currentData.map((d) {
         return ArcData(
           total: d.total,
@@ -214,16 +242,8 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
     }
 
     final result = <ArcData>[];
-    final allTypes = {
-      ..._previousData.map((d) => d.type),
-      ..._currentData.map((d) => d.type),
-    };
 
-    // We want to maintain a consistent order for the chart segments
-    // Let's use the ApplicationType.values order
-    for (final type in ApplicationType.values) {
-      if (!allTypes.contains(type)) continue;
-
+    for (final type in _allTypes) {
       final prev = _previousData.firstWhere(
             (d) => d.type == type,
         orElse: () => ArcData(total: 1.0, count: 0.0, type: type),

@@ -15,7 +15,9 @@ class _InnerData {
 }
 
 class ArcPainter extends CustomPainter {
+  final String Function(ApplicationType) getLocalizedName;
   final List<ArcData> items;
+  final ArcData Function(int) getArcDataById;
   final int? hoveredIndex;
   final Offset? hoveredCenter;
   final double extensionFactor;
@@ -32,13 +34,12 @@ class ArcPainter extends CustomPainter {
 
   static const double strokeWidth = 22.0;
 
-  final String Function(ApplicationType) getLocalizedName;
-
   ArcPainter({
     required this.items,
+    required this.getArcDataById,
+    required this.getLocalizedName,
     this.hoveredCenter,
     this.hoveredIndex,
-    required this.getLocalizedName,
     this.extensionFactor = 0.0,
   }) {
     _innerData = [];
@@ -156,7 +157,8 @@ class ArcPainter extends CustomPainter {
       final extendedPoint = hoveredCenter + normal * 60 * extensionFactor;
       final extendedPointForLabel =
           hoveredCenter + normal * 80 * extensionFactor;
-      final color = items[hoveredIndex].type.color.withValues(alpha: 0.8);
+      final hoveredItem = getArcDataById(hoveredIndex);
+      final color = hoveredItem.type.color.withValues(alpha: 0.8);
 
       final paint = Paint()
         ..color = color
@@ -176,7 +178,7 @@ class ArcPainter extends CustomPainter {
 
       // Render Label
       final valueTextSpan = TextSpan(
-        text: '${items[hoveredIndex].count.toInt()}',
+        text: '${hoveredItem.count.toInt()}',
         style: TextStyle(
           color: Colors.black,
           fontSize: 14,
@@ -184,7 +186,7 @@ class ArcPainter extends CustomPainter {
         ),
       );
       final labelTextSpan = TextSpan(
-        text: getLocalizedName(items[hoveredIndex].type),
+        text: getLocalizedName(hoveredItem.type),
         style: TextStyle(
           color: Colors.black,
           fontSize: 15,
@@ -264,7 +266,7 @@ class ArcPainter extends CustomPainter {
 
     // Draw bg-arc
     canvas.drawArc(rect, -90.0.toRad(), 360.0.toRad(), false, bgPaint);
-    _drawVolume(canvas, rect, -90.0, 360.0);
+    // _drawVolume(canvas, rect, -90.0, 360.0);
 
     // Draw non-hovered items first
     for (int i = _innerData.length - 1; i >= 0; i--) {
@@ -278,12 +280,12 @@ class ArcPainter extends CustomPainter {
           false,
           _innerData[i].paint,
         );
-        _drawVolume(
-          canvas,
-          rect,
-          _innerData[i].startAngle,
-          _innerData[i].sweepAngle,
-        );
+        // _drawVolume(
+        //   canvas,
+        //   rect,
+        //   _innerData[i].startAngle,
+        //   _innerData[i].sweepAngle,
+        // );
       }
     }
 
