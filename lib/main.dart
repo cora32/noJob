@@ -131,6 +131,7 @@ class DashboardScreen extends StatelessWidget {
       child: Column(
         verticalDirection: VerticalDirection.up,
         crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
           const SizedBox(height: 64),
           const LogWidget2(),
@@ -151,6 +152,7 @@ class DashboardScreen extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(height: 64),
         ],
       ),
     );

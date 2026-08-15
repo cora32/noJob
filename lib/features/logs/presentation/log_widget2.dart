@@ -18,20 +18,19 @@ class LogWidget2 extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Align(
-              alignment: Alignment.centerRight,
-              child: AddButton(),
-            ),
+            const Align(alignment: Alignment.centerRight, child: AddButton()),
             const SizedBox(height: 16),
             const Last8List(),
             const SizedBox(height: 8),
-            TextButton(
-              onPressed: () {
-                ref.read(navigationProvider.notifier).navigateTo(
-                    AppScreen.fullLog);
-              },
-              child: Text(context.res.fullLog),
-            ),
+            if (state.logs.isNotEmpty)
+              TextButton(
+                onPressed: () {
+                  ref
+                      .read(navigationProvider.notifier)
+                      .navigateTo(AppScreen.fullLog);
+                },
+                child: Text(context.res.fullLog),
+              ),
           ],
         ),
       ),
@@ -76,10 +75,14 @@ class Last8List extends ConsumerWidget {
       child: state.when(
         data: (state) {
           final logs = state.logs;
-          final last8Entries = logs.take(5).toList();
+          final last8Entries = logs
+              .take(8)
+              .toList(); // Do not reverse it because it is already reversed by the "order by DESC"
 
           if (last8Entries.isEmpty) {
-            return Center(child: Text(context.res.noLogs));
+            return SizedBox(
+                height: 100,
+                child: Center(child: Text(context.res.noLogs)));
           } else {
             return Column(
               mainAxisSize: MainAxisSize.min,

@@ -33,5 +33,6 @@
   "paste": "PASTE",
   "verificationRequired": "Verification required.",
   "fullLog": "Show all",
-  "unknownLink": "Unknown link"
+  "unknownLink": "Unknown link",
+  "search": "Search by title or company..."
 }
