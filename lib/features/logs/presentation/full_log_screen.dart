@@ -1,5 +1,6 @@
 import 'package:NoJob/features/home/domain/job_interface.dart';
 import 'package:NoJob/features/logs/presentation/log_screen.dart';
+import 'package:NoJob/features/logs/presentation/log_widget2.dart';
 import 'package:NoJob/features/logs/presentation/providers/search_provider.dart';
 import 'package:NoJob/shared/extensions.dart';
 import 'package:animated_reorderable_list/animated_reorderable_list.dart';
@@ -18,6 +19,9 @@ class FullLogScreen extends ConsumerWidget {
         const SizedBox(height: 16),
         const LogSearchBar(),
         const SizedBox(height: 8),
+        Align(alignment: Alignment.centerRight,
+          child: Padding(padding: EdgeInsetsGeometry.only(right: 24, top: 16),
+              child: AddButton()),),
         Expanded(
           child: filteredLogsAsync.when(
             data: (logs) {
