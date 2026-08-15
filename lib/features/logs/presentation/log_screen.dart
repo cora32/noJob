@@ -241,8 +241,13 @@ class LogItem extends StatelessWidget {
         children: [
           Text(
             item.id.toString(),
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w100),
+            style: TextStyle(fontSize: 11,
+                fontWeight: FontWeight.w100,
+                color: context.theme.textTheme.bodyMedium!.color!.withValues(
+                    alpha: 0.5)),
           ),
+          const SizedBox(width: 8),
+          DateWidget(date: item.date),
           const SizedBox(width: 4),
           Expanded(
               child: Padding(
@@ -392,6 +397,38 @@ class StateToggle extends ConsumerWidget {
             );
           },
         ),
+      ],
+    );
+  }
+}
+
+class DateWidget extends StatelessWidget {
+  final DateTime date;
+
+  const DateWidget({super.key, required this.date});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          dateFormatDay.format(date),
+          style: const TextStyle(
+              fontSize: 16, fontWeight: FontWeight.w700, height: 1),
+        ),
+        Text(
+          dateFormatMY.format(date),
+          style: TextStyle(fontSize: 12,
+              fontWeight: FontWeight.w300,
+              color: context.theme.textTheme.bodyMedium!.color!.withValues(
+                  alpha: 0.8),
+              height: 1.4),
+        ),
+        // Text(
+        //   dateFormatTime.format(date),
+        //   style: TextStyle(fontSize: 11, fontWeight: FontWeight.w100, color: context.theme.textTheme.bodyMedium!.color!.withValues(alpha: 0.6), height: 0.5),
+        // ),
       ],
     );
   }
