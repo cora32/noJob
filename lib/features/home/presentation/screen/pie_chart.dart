@@ -72,8 +72,8 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
           _previousData = _currentData.isNotEmpty
               ? _currentData
               : sortedList
-                    .map((d) => ArcData(total: d.total, count: 0, type: d.type))
-                    .toList();
+              .map((d) => ArcData(total: d.total, count: 0, type: d.type))
+              .toList();
           _currentData = sortedList;
           _allTypes = _computeAllTypes(_previousData, _currentData);
         });
@@ -101,22 +101,22 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
         final rejectionsCount = sortedArcData
             .firstWhere(
               (e) => e.type == ApplicationType.rejected,
-              orElse: () => ArcData.empty(),
-            )
+          orElse: () => ArcData.empty(),
+        )
             .count
             .toInt();
         final rejectedDetailedCount = sortedArcData
             .firstWhere(
               (e) => e.type == ApplicationType.rejectedDetailed,
-              orElse: () => ArcData.empty(),
-            )
+          orElse: () => ArcData.empty(),
+        )
             .count
             .toInt();
         final offerCount = sortedArcData
             .firstWhere(
               (e) => e.type == ApplicationType.offer,
-              orElse: () => ArcData.empty(),
-            )
+          orElse: () => ArcData.empty(),
+        )
             .count
             .toInt();
 
@@ -219,16 +219,15 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
     return sorted;
   }
 
-  List<ApplicationType> _computeAllTypes(
-    List<ArcData> prev,
-    List<ArcData> curr,
-  ) {
+  List<ApplicationType> _computeAllTypes(List<ArcData> prev,
+      List<ArcData> curr,) {
     final types = {
       ...prev.map((d) => d.type),
       ...curr.map((d) => d.type),
     }.toList();
     types.sort((a, b) => a.index.compareTo(b.index));
-    return types}
+    return types;
+  }
 
   List<ArcData> _interpolateData(double t) {
     if (_previousData.isEmpty) {
