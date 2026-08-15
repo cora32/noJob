@@ -1,3 +1,4 @@
+import 'package:NoJob/shared/extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,7 +23,7 @@ class _VerificationDialogState extends ConsumerState<VerificationDialog> {
   void _safePop(bool result) {
     if (_isPopping || !mounted) return;
     _isPopping = true;
-    Navigator.of(context).pop(result);
+    context.navigator.pop(result);
   }
 
   @override

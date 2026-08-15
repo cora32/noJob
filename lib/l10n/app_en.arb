@@ -32,5 +32,6 @@
   "invalidLink": "Invalid link",
   "paste": "PASTE",
   "verificationRequired": "Verification required.",
+  "fullLog": "Show all",
   "unknownLink": "Unknown link"
 }

@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:NoJob/features/navigation/presentation/providers/navigation_provider.dart';
 import 'package:NoJob/features/title/ui/AppTitleProvider.dart';
 import 'package:NoJob/shared/extensions.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ class AppTitle extends StatelessWidget {
     return Consumer(
       builder: (context, ref, child) {
         final themeState = ref.watch(appTitleProvider);
+        final currentScreen = ref.watch(navigationProvider);
 
         return themeState.when(
           data: (state) => SizedBox(
@@ -21,6 +23,15 @@ class AppTitle extends StatelessWidget {
             child: Stack(
               alignment: Alignment.center,
               children: [
+                if (currentScreen != AppScreen.dashboard)
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: () =>
+                          ref.read(navigationProvider.notifier).goBack(),
+                    ),
+                  ),
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.end,

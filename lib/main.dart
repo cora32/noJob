@@ -1,6 +1,8 @@
 import 'package:NoJob/features/home/presentation/screen/chart_widget.dart';
 import 'package:NoJob/features/home/presentation/screen/pie_chart.dart';
+import 'package:NoJob/features/logs/presentation/full_log_screen.dart';
 import 'package:NoJob/features/logs/presentation/log_widget2.dart';
+import 'package:NoJob/features/navigation/presentation/providers/navigation_provider.dart';
 import 'package:NoJob/features/title/ui/AppTitle.dart';
 import 'package:NoJob/features/title/ui/AppTitleProvider.dart';
 import 'package:NoJob/features/url_input/presentation/UrlFieldWidget.dart';
@@ -79,47 +81,77 @@ class MyApp extends ConsumerWidget {
   }
 }
 
-class ScaffoldWidget extends StatelessWidget {
+class ScaffoldWidget extends ConsumerWidget {
   const ScaffoldWidget({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentScreen = ref.watch(navigationProvider);
+
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         title: const Padding(
           padding: EdgeInsets.symmetric(horizontal: 24),
           child: AppTitle(),
         ),
       ),
-      body: Center(
-        child: Column(
-          verticalDirection: VerticalDirection.up,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const SizedBox(height: 64),
-
-            // const LogWidget(),
-            const LogWidget2(),
-            const SizedBox(height: 8),
-            const UrlFieldWidget(),
-
-            const SizedBox(height: 32),
-            SizedBox(
-              height: 350,
-              child: Row(
-                textDirection: TextDirection.rtl,
-                verticalDirection: VerticalDirection.down,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const LineChartWidget(),
-                  const SizedBox(width: 32),
-                  const PieWidget(),
-                ],
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          return FadeTransition(
+            opacity: animation,
+            child: SlideTransition(
+              position: animation.drive(
+                Tween<Offset>(
+                  begin: const Offset(0.0, 0.1),
+                  end: Offset.zero,
+                ).chain(CurveTween(curve: Curves.easeOut)),
               ),
+              child: child,
             ),
-          ],
-        ),
+          );
+        },
+        child: switch (currentScreen) {
+          AppScreen.dashboard =>
+          const DashboardScreen(key: ValueKey('dashboard')),
+          AppScreen.fullLog => const FullLogScreen(key: ValueKey('fullLog')),
+        },
+      ),
+    );
+  }
+}
+
+class DashboardScreen extends StatelessWidget {
+  const DashboardScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        verticalDirection: VerticalDirection.up,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const SizedBox(height: 64),
+          const LogWidget2(),
+          const SizedBox(height: 8),
+          const UrlFieldWidget(),
+          const SizedBox(height: 32),
+          SizedBox(
+            height: 350,
+            child: Row(
+              textDirection: TextDirection.rtl,
+              verticalDirection: VerticalDirection.down,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const LineChartWidget(),
+                const SizedBox(width: 32),
+                const PieWidget(),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:NoJob/features/logs/presentation/log_screen.dart';
 import 'package:NoJob/features/logs/presentation/providers/log_provider.dart';
+import 'package:NoJob/features/navigation/presentation/providers/navigation_provider.dart';
 import 'package:NoJob/shared/extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,14 +14,29 @@ class LogWidget2 extends ConsumerWidget {
 
     return state.when(
       data: (state) => Container(
-        padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [AddButton(), SizedBox(height: 16), Last8List()],
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Align(
+              alignment: Alignment.centerRight,
+              child: AddButton(),
+            ),
+            const SizedBox(height: 16),
+            const Last8List(),
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: () {
+                ref.read(navigationProvider.notifier).navigateTo(
+                    AppScreen.fullLog);
+              },
+              child: Text(context.res.fullLog),
+            ),
+          ],
         ),
       ),
       error: (err, stack) => Text(err.toString()),
-      loading: () => CircularProgressIndicator(),
+      loading: () => const CircularProgressIndicator(),
     );
   }
 }
@@ -34,10 +50,10 @@ class AddButton extends StatelessWidget {
       onPressed: () async {
         await showDialog(
           context: context,
-          builder: (context) => AddJobDialog(),
+          builder: (context) => const AddJobDialog(),
         );
       },
-      child: Text(" + Add"),
+      child: const Text(" + Add"),
     );
   }
 }
@@ -80,12 +96,8 @@ class Last8List extends ConsumerWidget {
             );
           }
         },
-        error: (error, stackTrace) {
-          return Text(error.toString());
-        },
-        loading: () {
-          return const CircularProgressIndicator();
-        },
+        error: (error, stackTrace) => Text(error.toString()),
+        loading: () => const CircularProgressIndicator(),
       ),
     );
   }

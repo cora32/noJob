@@ -20,6 +20,7 @@ extension LogExt on String {
 }
 
 extension ContextExt on BuildContext {
+  NavigatorState get navigator => Navigator.of(this);
   AppLocalizations get res => AppLocalizations.of(this)!;
 
   ThemeData get theme => Theme.of(this);
