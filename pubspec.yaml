@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  peernet:
+    path: ./modules/peernet
   flutter_localizations:
     sdk: flutter
   flutter_riverpod: ^3.3.2

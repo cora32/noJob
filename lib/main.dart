@@ -1,3 +1,7 @@
+import 'dart:io';
+import 'dart:isolate';
+
+import 'package:NoJob/features/home/data/database_service.dart';
 import 'package:NoJob/features/home/presentation/screen/chart_widget.dart';
 import 'package:NoJob/features/home/presentation/screen/pie_chart.dart';
 import 'package:NoJob/features/logs/presentation/full_log_screen.dart';
@@ -11,11 +15,52 @@ import 'package:NoJob/shared/extensions.dart';
 import 'package:NoJob/shared/persistence/storage_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:path/path.dart';
+import 'package:peernet/server/peernet_factory.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+
+Future<void> pnEntryPoint(Map<String, dynamic> config) async {
+  // final String dbPath = config['dbPath'];
+
+  final container = ProviderContainer();
+  final dbService = container.read(dbProvider);
+  final db = await dbService.database;
+
+  final peerNet = getPeerNet()
+    ..onGetSyncData = (data) async {
+      final results = await db.query('jobs');
+      return "DB Items: ${results.length}";
+    };
+
+  await peerNet.start(7834);
+}
+
+void startPeerNet(String dbPath) {
+  final rcvPort = ReceivePort();
+
+  try {
+    Isolate.spawn(pnEntryPoint, {
+      'sendPort': rcvPort.sendPort,
+      'dbPath': dbPath,
+    });
+  } catch (e) {
+    "PeerNet: Failed to start server: $e".e;
+  }
+}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  if (Platform.isWindows || Platform.isLinux) {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  }
+
   final prefs = await SharedPreferences.getInstance();
+
+  final dbPath = join(await getDatabasesPath(), 'nojob.db');
+  startPeerNet(dbPath);
 
   runApp(
     ProviderScope(
