@@ -1,8 +1,8 @@
 import 'dart:math';
 
-import 'package:NoJob/features/navigation/presentation/providers/navigation_provider.dart';
-import 'package:NoJob/features/title/ui/AppTitleProvider.dart';
-import 'package:NoJob/shared/extensions.dart';
+import 'package:nojob/features/navigation/presentation/providers/navigation_provider.dart';
+import 'package:nojob/features/title/ui/AppTitleProvider.dart';
+import 'package:nojob/shared/extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

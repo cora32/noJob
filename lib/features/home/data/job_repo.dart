@@ -1,5 +1,5 @@
-import 'package:NoJob/features/home/data/database_service.dart';
-import 'package:NoJob/features/home/domain/job_interface.dart';
+import 'package:nojob/features/home/data/database_service.dart';
+import 'package:nojob/features/home/domain/job_interface.dart';
 import 'package:sqflite/sqflite.dart';
 
 class JobRepo implements IJobRepo {

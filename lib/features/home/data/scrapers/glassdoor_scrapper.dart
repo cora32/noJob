@@ -1,4 +1,4 @@
-import 'package:NoJob/shared/extensions.dart';
+import 'package:nojob/shared/extensions.dart';
 import 'package:html/parser.dart' show parse;
 import 'package:http/http.dart' as http;
 

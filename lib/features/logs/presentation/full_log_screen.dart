@@ -1,8 +1,8 @@
-import 'package:NoJob/features/home/domain/job_interface.dart';
-import 'package:NoJob/features/logs/presentation/log_screen.dart';
-import 'package:NoJob/features/logs/presentation/log_widget2.dart';
-import 'package:NoJob/features/logs/presentation/providers/search_provider.dart';
-import 'package:NoJob/shared/extensions.dart';
+import 'package:nojob/features/home/domain/job_interface.dart';
+import 'package:nojob/features/logs/presentation/log_screen.dart';
+import 'package:nojob/features/logs/presentation/log_widget2.dart';
+import 'package:nojob/features/logs/presentation/providers/search_provider.dart';
+import 'package:nojob/shared/extensions.dart';
 import 'package:animated_reorderable_list/animated_reorderable_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

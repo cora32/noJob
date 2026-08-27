@@ -1,4 +1,4 @@
-import 'package:NoJob/features/logs/presentation/providers/log_provider.dart';
+import 'package:nojob/features/logs/presentation/providers/log_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class SearchNotifier extends Notifier<String> {

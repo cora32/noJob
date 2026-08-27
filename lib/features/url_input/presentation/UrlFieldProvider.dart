@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:NoJob/features/home/data/scrapers/base_scrapper.dart';
-import 'package:NoJob/features/home/presentation/providers/home_provider.dart';
-import 'package:NoJob/features/logs/presentation/providers/log_provider.dart';
-import 'package:NoJob/shared/extensions.dart';
+import 'package:nojob/features/home/data/scrapers/base_scrapper.dart';
+import 'package:nojob/features/home/presentation/providers/home_provider.dart';
+import 'package:nojob/features/logs/presentation/providers/log_provider.dart';
+import 'package:nojob/shared/extensions.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 sealed class UrlFieldState {

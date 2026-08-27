@@ -1,5 +1,5 @@
-import 'package:NoJob/features/home/presentation/providers/home_provider.dart';
-import 'package:NoJob/shared/extensions.dart';
+import 'package:nojob/features/home/presentation/providers/home_provider.dart';
+import 'package:nojob/shared/extensions.dart';
 import 'package:flutter/material.dart';
 
 class _InnerData {

@@ -1,10 +1,10 @@
 import 'dart:math';
 
-import 'package:NoJob/features/home/presentation/providers/home_provider.dart';
-import 'package:NoJob/features/home/presentation/screen/arc_painter.dart';
-import 'package:NoJob/features/home/presentation/screen/info_panel.dart';
-import 'package:NoJob/shared/extensions.dart';
-import 'package:NoJob/shared/shared.dart';
+import 'package:nojob/features/home/presentation/providers/home_provider.dart';
+import 'package:nojob/features/home/presentation/screen/arc_painter.dart';
+import 'package:nojob/features/home/presentation/screen/info_panel.dart';
+import 'package:nojob/shared/extensions.dart';
+import 'package:nojob/shared/shared.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

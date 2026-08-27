@@ -1,7 +1,7 @@
-import 'package:NoJob/features/logs/presentation/log_screen.dart';
-import 'package:NoJob/features/logs/presentation/providers/log_provider.dart';
-import 'package:NoJob/features/navigation/presentation/providers/navigation_provider.dart';
-import 'package:NoJob/shared/extensions.dart';
+import 'package:nojob/features/logs/presentation/log_screen.dart';
+import 'package:nojob/features/logs/presentation/providers/log_provider.dart';
+import 'package:nojob/features/navigation/presentation/providers/navigation_provider.dart';
+import 'package:nojob/shared/extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

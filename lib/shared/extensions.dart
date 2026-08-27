@@ -1,7 +1,7 @@
 import 'dart:math';
 
-import 'package:NoJob/features/title/ui/AppTitleProvider.dart';
-import 'package:NoJob/l10n/app_localizations.dart';
+import 'package:nojob/features/title/ui/AppTitleProvider.dart';
+import 'package:nojob/l10n/app_localizations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 

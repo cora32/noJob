@@ -1,9 +1,9 @@
 import 'dart:math';
 
-import 'package:NoJob/features/home/presentation/providers/home_provider.dart';
-import 'package:NoJob/features/home/presentation/providers/line_chart_provider.dart';
-import 'package:NoJob/shared/extensions.dart';
-import 'package:NoJob/shared/shared.dart';
+import 'package:nojob/features/home/presentation/providers/home_provider.dart';
+import 'package:nojob/features/home/presentation/providers/line_chart_provider.dart';
+import 'package:nojob/shared/extensions.dart';
+import 'package:nojob/shared/shared.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
