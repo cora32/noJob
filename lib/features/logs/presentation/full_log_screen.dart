@@ -1,11 +1,11 @@
-import 'package:nojob/features/home/domain/job_interface.dart';
-import 'package:nojob/features/logs/presentation/log_screen.dart';
-import 'package:nojob/features/logs/presentation/log_widget2.dart';
-import 'package:nojob/features/logs/presentation/providers/search_provider.dart';
-import 'package:nojob/shared/extensions.dart';
 import 'package:animated_reorderable_list/animated_reorderable_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nojob/features/home/domain/job_interface.dart';
+import 'package:nojob/features/logs/presentation/log_item.dart';
+import 'package:nojob/features/logs/presentation/log_widget2.dart';
+import 'package:nojob/features/logs/presentation/providers/search_provider.dart';
+import 'package:nojob/shared/extensions.dart';
 
 class FullLogScreen extends ConsumerWidget {
   const FullLogScreen({super.key});
@@ -44,7 +44,9 @@ class FullLogScreen extends ConsumerWidget {
                     color: index % 2 == 0
                         ? Colors.transparent
                         : Colors.grey.withValues(alpha: 0.1),
-                    child: LogItem(item: item),
+                    child: context.isMobile
+                        ? MobileLogItem(item: item)
+                        : LogItem(item: item),
                   );
                 },
                 enterTransition: [

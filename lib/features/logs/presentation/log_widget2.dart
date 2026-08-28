@@ -1,9 +1,12 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nojob/features/logs/presentation/log_item.dart';
 import 'package:nojob/features/logs/presentation/log_screen.dart';
 import 'package:nojob/features/logs/presentation/providers/log_provider.dart';
 import 'package:nojob/features/navigation/presentation/providers/navigation_provider.dart';
 import 'package:nojob/shared/extensions.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+const int PREVIEW_LOGS_COUNT = 8;
 
 class LogWidget2 extends ConsumerWidget {
   const LogWidget2({super.key});
@@ -14,15 +17,15 @@ class LogWidget2 extends ConsumerWidget {
 
     return state.when(
       data: (state) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const Align(alignment: Alignment.centerRight, child: AddButton()),
             const SizedBox(height: 16),
-            const Last8List(),
+            const Last8List(count: PREVIEW_LOGS_COUNT),
             const SizedBox(height: 8),
-            if (state.logs.isNotEmpty)
+            if (state.logs.isNotEmpty && state.logs.length > PREVIEW_LOGS_COUNT)
               TextButton(
                 onPressed: () {
                   ref
@@ -58,7 +61,9 @@ class AddButton extends StatelessWidget {
 }
 
 class Last8List extends ConsumerWidget {
-  const Last8List({super.key});
+  final int count;
+
+  const Last8List({super.key, required this.count});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -76,7 +81,7 @@ class Last8List extends ConsumerWidget {
         data: (state) {
           final logs = state.logs;
           final last8Entries = logs
-              .take(8)
+              .take(count)
               .toList(); // Do not reverse it because it is already reversed by the "order by DESC"
 
           if (last8Entries.isEmpty) {
@@ -93,7 +98,9 @@ class Last8List extends ConsumerWidget {
                     color: index % 2 == 0
                         ? Colors.transparent
                         : Colors.grey.withValues(alpha: 0.1),
-                    child: LogItem(item: entry),
+                    child: context.isMobile
+                        ? MobileLogItem(item: entry)
+                        : LogItem(item: entry),
                   ),
               ],
             );

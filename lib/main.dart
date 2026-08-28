@@ -1,6 +1,9 @@
 import 'dart:io';
 import 'dart:isolate';
 
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nojob/features/home/data/database_service.dart';
 import 'package:nojob/features/home/presentation/screen/chart_widget.dart';
 import 'package:nojob/features/home/presentation/screen/pie_chart.dart';
@@ -13,8 +16,6 @@ import 'package:nojob/features/url_input/presentation/UrlFieldWidget.dart';
 import 'package:nojob/l10n/app_localizations.dart';
 import 'package:nojob/shared/extensions.dart';
 import 'package:nojob/shared/persistence/storage_service.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart';
 import 'package:peernet/server/peernet_factory.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -51,6 +52,17 @@ void startPeerNet(String dbPath) {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarDividerColor: Colors.transparent,
+      statusBarColor: Colors.transparent,
+      systemNavigationBarContrastEnforced: false,
+      systemStatusBarContrastEnforced: false,
+    ),
+  );
 
   if (Platform.isWindows || Platform.isLinux) {
     sqfliteFfiInit();
@@ -113,14 +125,44 @@ class MyApp extends ConsumerWidget {
               ),
             ],
           ),
-          home: const ScaffoldWidget(),
+          home: AnnotatedRegion<SystemUiOverlayStyle>(
+            value: SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: colors.isDark
+                  ? Brightness.light
+                  : Brightness.dark,
+              systemNavigationBarColor: Colors.transparent,
+              systemNavigationBarIconBrightness: colors.isDark
+                  ? Brightness.light
+                  : Brightness.dark,
+              systemNavigationBarDividerColor: Colors.transparent,
+              systemNavigationBarContrastEnforced: false,
+            ),
+            child: const ScaffoldWidget(),
+          ),
         );
       },
       loading: () => const MaterialApp(
-        home: Scaffold(body: Center(child: CircularProgressIndicator())),
+        debugShowCheckedModeBanner: false,
+        home: AnnotatedRegion<SystemUiOverlayStyle>(
+          value: SystemUiOverlayStyle(
+            systemNavigationBarColor: Colors.transparent,
+            statusBarColor: Colors.transparent,
+            systemNavigationBarContrastEnforced: false,
+          ),
+          child: Scaffold(body: Center(child: CircularProgressIndicator())),
+        ),
       ),
       error: (err, stack) => MaterialApp(
-        home: Scaffold(body: Center(child: Text(err.toString()))),
+        debugShowCheckedModeBanner: false,
+        home: AnnotatedRegion<SystemUiOverlayStyle>(
+          value: SystemUiOverlayStyle(
+            systemNavigationBarColor: Colors.transparent,
+            statusBarColor: Colors.transparent,
+            systemNavigationBarContrastEnforced: false,
+          ),
+          child: Scaffold(body: Center(child: Text(err.toString()))),
+        ),
       ),
     );
   }
@@ -133,35 +175,52 @@ class ScaffoldWidget extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final currentScreen = ref.watch(navigationProvider);
 
-    return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 24),
-          child: AppTitle(),
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+
+        final NavigatorState? navigator = Navigator.maybeOf(context);
+        if (navigator != null && navigator.canPop()) {
+          navigator.pop();
+          return;
+        }
+
+        if (currentScreen == AppScreen.fullLog) {
+          ref.read(navigationProvider.notifier).goBack();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          title: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24),
+            child: AppTitle(),
+          ),
         ),
-      ),
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        transitionBuilder: (Widget child, Animation<double> animation) {
-          return FadeTransition(
-            opacity: animation,
-            child: SlideTransition(
-              position: animation.drive(
-                Tween<Offset>(
-                  begin: const Offset(0.0, 0.1),
-                  end: Offset.zero,
-                ).chain(CurveTween(curve: Curves.easeOut)),
+        body: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          transitionBuilder: (Widget child, Animation<double> animation) {
+            return FadeTransition(
+              opacity: animation,
+              child: SlideTransition(
+                position: animation.drive(
+                  Tween<Offset>(
+                    begin: const Offset(0.0, 0.1),
+                    end: Offset.zero,
+                  ).chain(CurveTween(curve: Curves.easeOut)),
+                ),
+                child: child,
               ),
-              child: child,
+            );
+          },
+          child: switch (currentScreen) {
+            AppScreen.dashboard => const DashboardScreen(
+              key: ValueKey('dashboard'),
             ),
-          );
-        },
-        child: switch (currentScreen) {
-          AppScreen.dashboard =>
-          const DashboardScreen(key: ValueKey('dashboard')),
-          AppScreen.fullLog => const FullLogScreen(key: ValueKey('fullLog')),
-        },
+            AppScreen.fullLog => const FullLogScreen(key: ValueKey('fullLog')),
+          },
+        ),
       ),
     );
   }
@@ -172,33 +231,32 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        verticalDirection: VerticalDirection.up,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          const SizedBox(height: 64),
-          const LogWidget2(),
-          const SizedBox(height: 8),
-          const UrlFieldWidget(),
-          const SizedBox(height: 32),
-          SizedBox(
-            height: 350,
-            child: Row(
-              textDirection: TextDirection.rtl,
-              verticalDirection: VerticalDirection.down,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const LineChartWidget(),
-                const SizedBox(width: 32),
-                const PieWidget(),
-              ],
+    return SingleChildScrollView(
+      child: Padding(
+        padding: EdgeInsetsGeometry.symmetric(vertical: 16, horizontal: 16),
+        child: Column(
+          verticalDirection: VerticalDirection.up,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            const SizedBox(height: 64),
+            const LogWidget2(),
+            const SizedBox(height: 8),
+            const UrlFieldWidget(),
+            const SizedBox(height: 32),
+            SizedBox(
+              child: Wrap(
+                textDirection: TextDirection.rtl,
+                verticalDirection: VerticalDirection.down,
+                alignment: WrapAlignment.center,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                spacing: 16.0,
+                runSpacing: 16.0,
+                children: [const LineChartWidget(), const PieWidget()],
+              ),
             ),
-          ),
-          const SizedBox(height: 64),
-        ],
+          ],
+        ),
       ),
     );
   }

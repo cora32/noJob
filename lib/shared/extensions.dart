@@ -1,9 +1,9 @@
 import 'dart:math';
 
-import 'package:nojob/features/title/ui/AppTitleProvider.dart';
-import 'package:nojob/l10n/app_localizations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:nojob/features/title/ui/AppTitleProvider.dart';
+import 'package:nojob/l10n/app_localizations.dart';
 
 extension RadExt on double {
   double toRad() => this * (pi / 180);
@@ -29,6 +29,8 @@ extension ContextExt on BuildContext {
       Theme.of(this).extension<NoJobThemeExtension>()!;
 
   ScaffoldMessengerState get toaster => ScaffoldMessenger.of(this);
+
+  bool get isMobile => MediaQuery.sizeOf(this).width < 600;
 
   void showErrorSnackBar(String textCode) {
     if (!mounted) return;

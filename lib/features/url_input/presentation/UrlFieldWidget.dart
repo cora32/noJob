@@ -1,9 +1,9 @@
-import 'package:nojob/features/logs/presentation/verification_webview.dart';
-import 'package:nojob/features/url_input/presentation/UrlFieldProvider.dart';
-import 'package:nojob/shared/extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nojob/features/logs/presentation/verification_webview.dart';
+import 'package:nojob/features/url_input/presentation/UrlFieldProvider.dart';
+import 'package:nojob/shared/extensions.dart';
 
 class UrlFieldWidget extends ConsumerStatefulWidget {
   const UrlFieldWidget({super.key});
@@ -76,7 +76,7 @@ class _UrlFieldWidgetState extends ConsumerState<UrlFieldWidget> {
         return Container(
           alignment: Alignment.topCenter,
           height: 90,
-          padding: const EdgeInsets.symmetric(horizontal: 32),
+          padding: const EdgeInsets.symmetric(horizontal: 0),
           child: Stack(
             alignment: Alignment.center,
             children: [

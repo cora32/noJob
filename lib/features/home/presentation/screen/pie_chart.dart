@@ -1,13 +1,13 @@
 import 'dart:math';
 
+import 'package:flutter/material.dart';
+import 'package:flutter/widget_previews.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nojob/features/home/presentation/providers/home_provider.dart';
 import 'package:nojob/features/home/presentation/screen/arc_painter.dart';
 import 'package:nojob/features/home/presentation/screen/info_panel.dart';
 import 'package:nojob/shared/extensions.dart';
 import 'package:nojob/shared/shared.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/widget_previews.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 @Preview(name: 'Preview test')
 Widget p() => PieWidget();
@@ -154,8 +154,7 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
                 clipBehavior: Clip.none,
                 children: [
                   SizedBox(
-                    width: 200,
-                    height: 200,
+                    height: 250,
                     child: CustomPaint(
                       painter: ArcPainter(
                         getLocalizedName: (type) => type.localizedName(context),
