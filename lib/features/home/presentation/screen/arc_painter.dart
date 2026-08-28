@@ -1,6 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:nojob/features/home/presentation/providers/home_provider.dart';
 import 'package:nojob/shared/extensions.dart';
-import 'package:flutter/material.dart';
 
 class _InnerData {
   final Paint paint;
@@ -21,6 +21,9 @@ class ArcPainter extends CustomPainter {
   final int? hoveredIndex;
   final Offset? hoveredCenter;
   final double extensionFactor;
+  final double screenWidth;
+  final double chartGlobalX;
+
   late List<_InnerData> _innerData = [];
   final cardPaint = Paint()
     ..color = Colors.white
@@ -41,6 +44,8 @@ class ArcPainter extends CustomPainter {
     this.hoveredCenter,
     this.hoveredIndex,
     this.extensionFactor = 0.0,
+    this.screenWidth = 0.0,
+    this.chartGlobalX = 0.0,
   }) {
     _innerData = [];
 
@@ -208,6 +213,7 @@ class ArcPainter extends CustomPainter {
       const horizontalPadding = 8.0;
       const verticalPadding = 4.0;
       const borderRadius = 4.0;
+      const screenMargin = 16.0;
 
       final cardWidth =
           labelTextPainter.width +
@@ -219,8 +225,24 @@ class ArcPainter extends CustomPainter {
           verticalPadding * 2;
 
       // Position the Card centered at extendedPointForLabel
+      double cardCenterX = extendedPointForLabel.dx;
+
+      // Clamp horizontally to screen boundaries
+      if (screenWidth > 0) {
+        final globalCardCenterX = chartGlobalX + cardCenterX;
+        final halfWidth = cardWidth / 2;
+
+        if (globalCardCenterX - halfWidth < screenMargin) {
+          // Too far left
+          cardCenterX = screenMargin + halfWidth - chartGlobalX;
+        } else if (globalCardCenterX + halfWidth > screenWidth - screenMargin) {
+          // Too far right
+          cardCenterX = screenWidth - screenMargin - halfWidth - chartGlobalX;
+        }
+      }
+
       final cardRect = Rect.fromCenter(
-        center: extendedPointForLabel,
+        center: Offset(cardCenterX, extendedPointForLabel.dy),
         width: cardWidth,
         height: cardHeight,
       );
@@ -243,13 +265,13 @@ class ArcPainter extends CustomPainter {
 
       // Position text centered within the card
       final labelTextOffset = Offset(
-        extendedPointForLabel.dx - labelTextPainter.width / 2,
+        cardCenterX - labelTextPainter.width / 2,
         extendedPointForLabel.dy - labelTextPainter.height,
       );
       labelTextPainter.paint(canvas, labelTextOffset);
 
       final valueTextOffset = Offset(
-        extendedPointForLabel.dx - valueTextPainter.width / 2,
+        cardCenterX - valueTextPainter.width / 2,
         extendedPointForLabel.dy,
       );
       valueTextPainter.paint(canvas, valueTextOffset);

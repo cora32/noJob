@@ -314,7 +314,7 @@ class MobileStatusDropDown extends ConsumerWidget {
         borderRadius: BorderRadius.circular(4),
         icon: const Icon(Icons.arrow_drop_down, size: 16),
         style: TextStyle(
-          fontSize: 12,
+          fontSize: 11,
           color: context.theme.brightness == Brightness.dark
               ? Colors.white
               : Colors.black,

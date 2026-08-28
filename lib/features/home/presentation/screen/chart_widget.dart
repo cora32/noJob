@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:nojob/features/home/presentation/providers/home_provider.dart';
 import 'package:nojob/features/home/presentation/providers/line_chart_provider.dart';
 import 'package:nojob/shared/extensions.dart';
-import 'package:nojob/shared/shared.dart';
+import 'package:nojob/shared/ui/panel.dart';
 
 class LineChartWidget extends ConsumerWidget {
   const LineChartWidget({super.key});
@@ -60,26 +60,16 @@ class LineChartCard extends StatelessWidget {
 
     final double computedMaxY = max(6.0, maxVal + 1);
 
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+    return Panel(
+        title: context.res.appsToday(applicationsToday),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              context.res.appsToday(applicationsToday),
-              style: labelStyle,
-            ),
-            const SizedBox(height: 16),
-            Container(
-              height: 200,
-              padding: EdgeInsets.only(right: 32),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
+            Expanded(child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: SizedBox(
-                  width: 600,
+                  width: 650,
                   child: LineChart(
                     LineChartData(
                       lineTouchData: LineTouchData(
@@ -135,6 +125,10 @@ class LineChartCard extends StatelessWidget {
                             reservedSize: 30,
                             interval: 1,
                             getTitlesWidget: (value, meta) {
+                              if (value > 14) {
+                                return const SizedBox.shrink();
+                              }
+
                               final date = baseDate.add(
                                 Duration(days: value.toInt()),
                               );
@@ -178,8 +172,10 @@ class LineChartCard extends StatelessWidget {
                         show: true,
                         border: Border.all(color: const Color(0xff37434d)),
                       ),
-                      minX: 0,
-                      maxX: (firstSpots.length - 1).toDouble(),
+                      minX: -0.5,
+                      maxX: firstSpots.isNotEmpty
+                          ? (firstSpots.length - 1).toDouble() + 0.5
+                          : 13.5,
                       minY: 0,
                       maxY: computedMaxY,
                       lineBarsData: sourceData.entries.map((entry) {
@@ -205,14 +201,16 @@ class LineChartCard extends StatelessWidget {
                 ),
               ),
             ),
+            ),
+            //Legend
+
             const SizedBox(height: 12),
             const Padding(
               padding: EdgeInsetsGeometry.symmetric(horizontal: 32),
               child: LegendWidget(),
             ),
           ],
-        ),
-      ),
+        )
     );
   }
 }

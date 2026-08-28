@@ -25,12 +25,14 @@ extension ContextExt on BuildContext {
 
   ThemeData get theme => Theme.of(this);
 
+  TextTheme get textTheme => theme.textTheme;
+
   NoJobThemeExtension get appTheme =>
       Theme.of(this).extension<NoJobThemeExtension>()!;
 
   ScaffoldMessengerState get toaster => ScaffoldMessenger.of(this);
 
-  bool get isMobile => MediaQuery.sizeOf(this).width < 600;
+  bool get isMobile => MediaQuery.sizeOf(this).width < 720;
 
   void showErrorSnackBar(String textCode) {
     if (!mounted) return;

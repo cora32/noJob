@@ -16,6 +16,7 @@ import 'package:nojob/features/url_input/presentation/UrlFieldWidget.dart';
 import 'package:nojob/l10n/app_localizations.dart';
 import 'package:nojob/shared/extensions.dart';
 import 'package:nojob/shared/persistence/storage_service.dart';
+import 'package:nojob/shared/ui/horizontal_line_label.dart';
 import 'package:path/path.dart';
 import 'package:peernet/server/peernet_factory.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -199,6 +200,7 @@ class ScaffoldWidget extends ConsumerWidget {
           ),
         ),
         body: AnimatedSwitcher(
+
           duration: const Duration(milliseconds: 300),
           transitionBuilder: (Widget child, Animation<double> animation) {
             return FadeTransition(
@@ -231,33 +233,42 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: EdgeInsetsGeometry.symmetric(vertical: 16, horizontal: 16),
-        child: Column(
-          verticalDirection: VerticalDirection.up,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            const SizedBox(height: 64),
-            const LogWidget2(),
-            const SizedBox(height: 8),
-            const UrlFieldWidget(),
-            const SizedBox(height: 32),
-            SizedBox(
-              child: Wrap(
-                textDirection: TextDirection.rtl,
-                verticalDirection: VerticalDirection.down,
-                alignment: WrapAlignment.center,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                spacing: 16.0,
-                runSpacing: 16.0,
-                children: [const LineChartWidget(), const PieWidget()],
-              ),
+    final main = Padding(
+      padding: EdgeInsetsGeometry.symmetric(vertical: 16, horizontal: 16),
+      child: Column(
+        verticalDirection: VerticalDirection.up,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        // mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          const SizedBox(height: 64),
+          const LogWidget2(),
+          HorizontalLineLabel(
+            text: context.res.logs,
+          ),
+          const SizedBox(height: 8),
+          const UrlFieldWidget(),
+          const SizedBox(height: 32,
+          ),
+          SizedBox(
+            child: Wrap(
+              textDirection: TextDirection.rtl,
+              verticalDirection: VerticalDirection.down,
+              alignment: WrapAlignment.center,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              spacing: 16.0,
+              runSpacing: 16.0,
+              children: [
+                const LineChartWidget(),
+                const PieWidget(chartSize: 230,)
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
+
+    return context.isMobile ? SingleChildScrollView(
+      child: main,
+    ) : Center(child: main);
   }
 }

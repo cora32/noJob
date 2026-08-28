@@ -17,7 +17,7 @@ class LogWidget2 extends ConsumerWidget {
 
     return state.when(
       data: (state) => Container(
-        padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 16),
+        padding: const EdgeInsets.only(bottom: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -48,7 +48,8 @@ class AddButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextButton(
+    return Padding(
+        padding: EdgeInsetsGeometry.only(right: 16), child: TextButton(
       onPressed: () async {
         await showDialog(
           context: context,
@@ -56,7 +57,7 @@ class AddButton extends StatelessWidget {
         );
       },
       child: const Text(" + Add"),
-    );
+    ));
   }
 }
 

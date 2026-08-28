@@ -1,19 +1,17 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/widget_previews.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nojob/features/home/presentation/providers/home_provider.dart';
 import 'package:nojob/features/home/presentation/screen/arc_painter.dart';
 import 'package:nojob/features/home/presentation/screen/info_panel.dart';
 import 'package:nojob/shared/extensions.dart';
-import 'package:nojob/shared/shared.dart';
-
-@Preview(name: 'Preview test')
-Widget p() => PieWidget();
+import 'package:nojob/shared/ui/panel.dart';
 
 class PieWidget extends ConsumerStatefulWidget {
-  const PieWidget({super.key});
+  final double chartSize;
+
+  const PieWidget({super.key, required this.chartSize});
 
   @override
   ConsumerState<PieWidget> createState() => _ChartWidgetState();
@@ -21,6 +19,7 @@ class PieWidget extends ConsumerStatefulWidget {
 
 class _ChartWidgetState extends ConsumerState<PieWidget>
     with TickerProviderStateMixin {
+  final GlobalKey _chartKey = GlobalKey();
   int? _hoveredIndex;
   Offset? _hoveredCenter;
 
@@ -72,8 +71,8 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
           _previousData = _currentData.isNotEmpty
               ? _currentData
               : sortedList
-              .map((d) => ArcData(total: d.total, count: 0, type: d.type))
-              .toList();
+                    .map((d) => ArcData(total: d.total, count: 0, type: d.type))
+                    .toList();
           _currentData = sortedList;
           _allTypes = _computeAllTypes(_previousData, _currentData);
         });
@@ -101,82 +100,103 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
         final rejectionsCount = sortedArcData
             .firstWhere(
               (e) => e.type == ApplicationType.rejected,
-          orElse: () => ArcData.empty(),
-        )
+              orElse: () => ArcData.empty(),
+            )
             .count
             .toInt();
         final rejectedDetailedCount = sortedArcData
             .firstWhere(
               (e) => e.type == ApplicationType.rejectedDetailed,
-          orElse: () => ArcData.empty(),
-        )
+              orElse: () => ArcData.empty(),
+            )
             .count
             .toInt();
         final offerCount = sortedArcData
             .firstWhere(
               (e) => e.type == ApplicationType.offer,
-          orElse: () => ArcData.empty(),
-        )
+              orElse: () => ArcData.empty(),
+            )
             .count
             .toInt();
 
-        return MouseRegion(
-          onHover: (event) {
-            final (index, center) = _hitTest(
-              event.localPosition,
-              sortedArcData,
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final detectorSize = Size(
+              constraints.maxWidth,
+              constraints.maxHeight,
             );
-            if (index != _hoveredIndex) {
-              setState(() {
-                _hoveredIndex = index;
-                _hoveredCenter = center;
-              });
-              if (index != null) {
-                _controller.forward(from: 0.0);
-              } else {
+            return MouseRegion(
+              onHover: (event) => _updateInteraction(
+                event.localPosition,
+                sortedArcData,
+                detectorSize,
+                widget.chartSize,
+              ),
+              onExit: (event) {
+                setState(() {
+                  _hoveredIndex = null;
+                  _hoveredCenter = null;
+                });
                 _controller.reverse();
-              }
-            }
-          },
-          onExit: (event) {
-            setState(() {
-              _hoveredIndex = null;
-              _hoveredCenter = null;
-            });
-            _controller.reverse();
-          },
-          child: AnimatedBuilder(
-            animation: Listenable.merge([_animation, _drawAnimation]),
-            builder: (context, child) {
-              final animatedData = _interpolateData(_drawAnimation.value);
+              },
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTapDown: (details) => _updateInteraction(
+                  details.localPosition,
+                  sortedArcData,
+                  detectorSize,
+                  widget.chartSize,
+                ),
+                child: AnimatedBuilder(
+                  animation: Listenable.merge([_animation, _drawAnimation]),
+                  builder: (context, child) {
+                    final animatedData = _interpolateData(_drawAnimation.value);
 
-              return Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  SizedBox(
-                    height: 250,
-                    child: CustomPaint(
-                      painter: ArcPainter(
-                        getLocalizedName: (type) => type.localizedName(context),
-                        items: animatedData,
-                        getArcDataById: (index) => sortedArcData[index],
-                        hoveredCenter: _hoveredCenter,
-                        hoveredIndex: _hoveredIndex,
-                        extensionFactor: _animation.value,
+                    final pie = Center(
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          SizedBox(
+                            height: widget.chartSize,
+                            width: widget.chartSize,
+                            child: CustomPaint(
+                              key: _chartKey,
+                              painter: ArcPainter(
+                                getLocalizedName: (type) =>
+                                    type.localizedName(context),
+                                items: animatedData,
+                                getArcDataById: (index) => sortedArcData[index],
+                                hoveredCenter: _hoveredCenter,
+                                hoveredIndex: _hoveredIndex,
+                                extensionFactor: _animation.value,
+                                screenWidth: MediaQuery.sizeOf(context).width,
+                                chartGlobalX: _getChartGlobalX(),
+                              ),
+                              child: Center(
+                                child: InfoPanel(
+                                  total: totalCount,
+                                  rejections:
+                                      rejectionsCount + rejectedDetailedCount,
+                                  offers: offerCount,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      child: Center(
-                        child: InfoPanel(
-                          total: totalCount,
-                          rejections: rejectionsCount + rejectedDetailedCount,
-                          offers: offerCount,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
-          ),
+                    );
+
+                    return context.isMobile
+                        ? pie
+                        : ConstrainedBox(
+                            constraints: BoxConstraints(maxWidth: 300),
+                            child: pie,
+                          );
+                  },
+                ),
+              ),
+            );
+          },
         );
       },
       error: (error, stack) {
@@ -185,30 +205,38 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
       loading: () => const CircularProgressIndicator(),
     );
 
-    return Container(
-      color: Colors.transparent,
-      child: Card(
-        elevation: 4,
-        shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(16)),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.only(
-            top: 16,
-            bottom: 4,
-            left: 16,
-            right: 16,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(context.res.overview, style: labelStyle),
-              Padding(padding: const EdgeInsets.all(32), child: chartWidget),
-            ],
-          ),
-        ),
-      ),
+    return Panel(title: context.res.overview, height: 250, child: chartWidget);
+  }
+
+  double _getChartGlobalX() {
+    final RenderBox? renderBox =
+        _chartKey.currentContext?.findRenderObject() as RenderBox?;
+    return renderBox?.localToGlobal(Offset.zero).dx ?? 0.0;
+  }
+
+  void _updateInteraction(
+    Offset localPosition,
+    List<ArcData> items,
+    Size detectorSize,
+    double chartSize,
+  ) {
+    final (index, center) = _hitTest(
+      localPosition,
+      items,
+      detectorSize,
+      chartSize,
     );
+    if (index != _hoveredIndex) {
+      setState(() {
+        _hoveredIndex = index;
+        _hoveredCenter = center;
+      });
+      if (index != null) {
+        _controller.forward(from: 0.0);
+      } else {
+        _controller.reverse();
+      }
+    }
   }
 
   List<ArcData> _sortArcData(List<ArcData> data) {
@@ -218,8 +246,10 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
     return sorted;
   }
 
-  List<ApplicationType> _computeAllTypes(List<ArcData> prev,
-      List<ArcData> curr,) {
+  List<ApplicationType> _computeAllTypes(
+    List<ArcData> prev,
+    List<ArcData> curr,
+  ) {
     final types = {
       ...prev.map((d) => d.type),
       ...curr.map((d) => d.type),
@@ -231,11 +261,7 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
   List<ArcData> _interpolateData(double t) {
     if (_previousData.isEmpty) {
       return _currentData.map((d) {
-        return ArcData(
-          total: d.total,
-          count: d.count * t,
-          type: d.type,
-        );
+        return ArcData(total: d.total, count: d.count * t, type: d.type);
       }).toList();
     }
 
@@ -243,36 +269,39 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
 
     for (final type in _allTypes) {
       final prev = _previousData.firstWhere(
-            (d) => d.type == type,
+        (d) => d.type == type,
         orElse: () => ArcData(total: 1.0, count: 0.0, type: type),
       );
       final curr = _currentData.firstWhere(
-            (d) => d.type == type,
+        (d) => d.type == type,
         orElse: () => ArcData(total: 1.0, count: 0.0, type: type),
       );
 
       final interpolatedCount = prev.count + (curr.count - prev.count) * t;
       final interpolatedTotal = prev.total + (curr.total - prev.total) * t;
 
-      result.add(ArcData(
-        total: interpolatedTotal,
-        count: interpolatedCount,
-        type: type,
-      ));
+      result.add(
+        ArcData(total: interpolatedTotal, count: interpolatedCount, type: type),
+      );
     }
 
     return result;
   }
 
-  (int?, Offset?) _hitTest(Offset localPosition, List<ArcData> items) {
-    const double size = 200.0;
-    const double center = size / 2;
+  (int?, Offset?) _hitTest(
+    Offset localPosition,
+    List<ArcData> items,
+    Size detectorSize,
+    double chartSize,
+  ) {
+    double radius = chartSize / 2;
     const double strokeWidth = 22.0;
-    const double innerRadius = center - strokeWidth / 2;
-    const double outerRadius = center + strokeWidth / 2;
+    const double hitTolerance = 20.0; // Added tolerance for easier tapping
+    double innerRadius = radius - strokeWidth / 2 - hitTolerance;
+    double outerRadius = radius + strokeWidth / 2 + hitTolerance;
 
-    final dx = localPosition.dx - center;
-    final dy = localPosition.dy - center;
+    final dx = localPosition.dx - detectorSize.width / 2;
+    final dy = localPosition.dy - detectorSize.height / 2;
     final distance = sqrt(dx * dx + dy * dy);
 
     if (distance < innerRadius || distance > outerRadius) {
@@ -290,11 +319,11 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
       final sweepAngle = (items[i].count / items[i].total.toDouble()) * 360.0;
       if (normalizedAngle >= currentAngle &&
           normalizedAngle <= currentAngle + sweepAngle) {
-        // Calculate the center point of the arc
+        // Calculate the center point of the arc relative to the 230x230 box
         final midAngle = currentAngle + sweepAngle / 2;
         final actualAngleRad = (midAngle - 90).toRad();
-        final arcCenterX = center + center * cos(actualAngleRad);
-        final arcCenterY = center + center * sin(actualAngleRad);
+        final arcCenterX = radius + radius * cos(actualAngleRad);
+        final arcCenterY = radius + radius * sin(actualAngleRad);
 
         return (i, Offset(arcCenterX, arcCenterY));
       }

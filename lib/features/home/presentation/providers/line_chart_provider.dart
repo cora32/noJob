@@ -1,7 +1,7 @@
-import 'package:nojob/features/home/presentation/providers/home_provider.dart';
-import 'package:nojob/features/home/presentation/providers/job_repo_provider.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nojob/features/home/presentation/providers/home_provider.dart';
+import 'package:nojob/features/home/presentation/providers/job_repo_provider.dart';
 
 class LineChartState {
   final int applicationsToday;
@@ -37,8 +37,8 @@ class LineChartNotifier extends AsyncNotifier<LineChartState> {
       if (source == SupportedSite.none) continue;
 
       final dataMap = <DateTime, int>{};
-      // Initialize map with last 14 days for this source
-      for (int i = 0; i < 14; i++) {
+      // Initialize map with last 14 days + 2 future days for this source
+      for (int i = 0; i < 15; i++) {
         final date = today.subtract(Duration(days: i));
         dataMap[date] = 0;
       }
