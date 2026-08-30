@@ -1,15 +1,14 @@
 import 'dart:io';
-import 'dart:isolate';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:nojob/features/home/data/database_service.dart';
 import 'package:nojob/features/home/presentation/screen/chart_widget.dart';
 import 'package:nojob/features/home/presentation/screen/pie_chart.dart';
 import 'package:nojob/features/logs/presentation/full_log_screen.dart';
 import 'package:nojob/features/logs/presentation/log_widget2.dart';
 import 'package:nojob/features/navigation/presentation/providers/navigation_provider.dart';
+import 'package:nojob/features/server/server.dart';
 import 'package:nojob/features/title/ui/AppTitle.dart';
 import 'package:nojob/features/title/ui/AppTitleProvider.dart';
 import 'package:nojob/features/url_input/presentation/UrlFieldWidget.dart';
@@ -18,42 +17,13 @@ import 'package:nojob/shared/extensions.dart';
 import 'package:nojob/shared/persistence/storage_service.dart';
 import 'package:nojob/shared/ui/horizontal_line_label.dart';
 import 'package:path/path.dart';
-import 'package:peernet/server/peernet_factory.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-
-Future<void> pnEntryPoint(Map<String, dynamic> config) async {
-  // final String dbPath = config['dbPath'];
-
-  final container = ProviderContainer();
-  final dbService = container.read(dbProvider);
-  final db = await dbService.database;
-
-  final peerNet = getPeerNet()
-    ..onGetSyncData = (data) async {
-      final results = await db.query('jobs');
-      return "DB Items: ${results.length}";
-    };
-
-  await peerNet.start(7834);
-}
-
-void startPeerNet(String dbPath) {
-  final rcvPort = ReceivePort();
-
-  try {
-    Isolate.spawn(pnEntryPoint, {
-      'sendPort': rcvPort.sendPort,
-      'dbPath': dbPath,
-    });
-  } catch (e) {
-    "PeerNet: Failed to start server: $e".e;
-  }
-}
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Fullscreen + transparent navbar
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -65,15 +35,21 @@ Future<void> main() async {
     ),
   );
 
+  // DB init: Use FFI for desktop, native for mobile
   if (Platform.isWindows || Platform.isLinux) {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }
-
-  final prefs = await SharedPreferences.getInstance();
-
   final dbPath = join(await getDatabasesPath(), 'nojob.db');
+
+  // PeerNet init
   startPeerNet(dbPath);
+
+  // Discover peer nodes
+  startPeerNodesDiscovery();
+
+  // SharedPrefs init
+  final prefs = await SharedPreferences.getInstance();
 
   runApp(
     ProviderScope(
@@ -236,19 +212,11 @@ class DashboardScreen extends StatelessWidget {
     final main = Padding(
       padding: EdgeInsetsGeometry.symmetric(vertical: 16, horizontal: 16),
       child: Column(
-        verticalDirection: VerticalDirection.up,
+        verticalDirection: VerticalDirection.down,
         crossAxisAlignment: CrossAxisAlignment.center,
-        // mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          const SizedBox(height: 64),
-          const LogWidget2(),
-          HorizontalLineLabel(
-            text: context.res.logs,
-          ),
-          const SizedBox(height: 8),
-          const UrlFieldWidget(),
-          const SizedBox(height: 32,
-          ),
+          const SizedBox(height: 16),
           SizedBox(
             child: Wrap(
               textDirection: TextDirection.rtl,
@@ -263,6 +231,14 @@ class DashboardScreen extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(height: 32),
+          const UrlFieldWidget(),
+          HorizontalLineLabel(
+            text: context.res.logs,
+          ),
+          const SizedBox(height: 8),
+          const LogWidget2(),
+          const SizedBox(height: 32),
         ],
       ),
     );

@@ -202,7 +202,7 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
       error: (error, stack) {
         return Text(error.toString());
       },
-      loading: () => const CircularProgressIndicator(),
+      loading: () => Center(child: const CircularProgressIndicator(),),
     );
 
     return Panel(title: context.res.overview, height: 250, child: chartWidget);

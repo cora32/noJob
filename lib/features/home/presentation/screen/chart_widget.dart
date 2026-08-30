@@ -24,7 +24,10 @@ class LineChartWidget extends ConsumerWidget {
       error: (error, stack) {
         return Text(error.toString());
       },
-      loading: () => const CircularProgressIndicator(),
+      loading: () =>
+          Panel(
+              title: context.res.appsToday(0),
+              child: Center(child: const CircularProgressIndicator())),
     );
   }
 }

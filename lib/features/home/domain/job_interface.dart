@@ -50,4 +50,6 @@ abstract class IJobRepo {
   Future<void> updateJobStatus(int id, String status);
 
   Future<void> deleteJob(int id);
+
+  Future<int> getLastTimestamp();
 }

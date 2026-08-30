@@ -8,6 +8,9 @@ final dbProvider = Provider((ref) => DatabaseService());
 
 class DatabaseService {
   static Database? _database;
+  static String? _overridePath;
+
+  static void setDatabasePath(String path) => _overridePath = dirname(path);
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -16,28 +19,54 @@ class DatabaseService {
   }
 
   Future<Database> _initDatabase() async {
-    if (Platform.isWindows || Platform.isLinux) {
-      sqfliteFfiInit();
-      databaseFactory = databaseFactoryFfi;
-    }
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, 'nojob.db');
+    bool useFfi = false;
 
-    return await openDatabaseDirectly(path);
+    if (Platform.isWindows || Platform.isLinux) {
+      useFfi = true;
+    } else if (_overridePath != null) {
+      // We are in a background isolate (like PeerNet server)
+      useFfi = true;
+    }
+
+    final DatabaseFactory factory;
+    if (useFfi) {
+      sqfliteFfiInit();
+      factory = databaseFactoryFfi;
+    } else {
+      factory = databaseFactory;
+    }
+
+    final dbPath = _overridePath ?? await factory.getDatabasesPath();
+
+    // Ensure the directory exists (FFI doesn't create it automatically)
+    await Directory(dbPath).create(recursive: true);
+
+    final path = join(dbPath, 'nojob.db');
+    return await openDatabaseWithFactory(path, factory);
+  }
+
+  static Future<Database> openDatabaseWithFactory(String path,
+      DatabaseFactory factory) async {
+    return await factory.openDatabase(
+      path,
+      options: OpenDatabaseOptions(
+        version: 3,
+        onCreate: _onCreateInternal,
+        onUpgrade: _onUpgradeInternal,
+      ),
+    );
   }
 
   static Future<Database> openDatabaseDirectly(String path) async {
-    if (Platform.isWindows || Platform.isLinux) {
+    final DatabaseFactory factory;
+    if (Platform.isWindows || Platform.isLinux || _overridePath != null) {
       sqfliteFfiInit();
-      databaseFactory = databaseFactoryFfi;
+      factory = databaseFactoryFfi;
+    } else {
+      factory = databaseFactory;
     }
 
-    return await openDatabase(
-      path,
-      version: 3,
-      onCreate: _onCreateInternal,
-      onUpgrade: _onUpgradeInternal,
-    );
+    return await openDatabaseWithFactory(path, factory);
   }
 
   static Future<void> _onUpgradeInternal(Database db, int oldVersion,
