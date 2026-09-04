@@ -5,9 +5,11 @@ class Panel extends StatelessWidget {
   final String title;
   final Widget child;
   final double height;
+  final EdgeInsets innerPadding;
 
   const Panel({
     super.key,
+    this.innerPadding = EdgeInsets.zero,
     required this.title,
     required this.child,
     this.height = 250,
@@ -26,8 +28,8 @@ class Panel extends StatelessWidget {
             Text(title, style: labelStyle),
             const SizedBox(height: 16),
             Container(
+              padding: innerPadding,
               height: height,
-              padding: const EdgeInsets.all(16),
               child: child,
             ),
           ],

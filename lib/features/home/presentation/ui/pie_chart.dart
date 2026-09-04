@@ -121,82 +121,79 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
             .count
             .toInt();
 
-        return LayoutBuilder(
-          builder: (context, constraints) {
-            final detectorSize = Size(
-              constraints.maxWidth,
-              constraints.maxHeight,
-            );
-            return MouseRegion(
-              onHover: (event) => _updateInteraction(
-                event.localPosition,
-                sortedArcData,
-                detectorSize,
-                widget.chartSize,
-              ),
-              onExit: (event) {
-                setState(() {
-                  _hoveredIndex = null;
-                  _hoveredCenter = null;
-                });
-                _controller.reverse();
-              },
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTapDown: (details) => _updateInteraction(
-                  details.localPosition,
-                  sortedArcData,
-                  detectorSize,
-                  widget.chartSize,
-                ),
-                child: AnimatedBuilder(
-                  animation: Listenable.merge([_animation, _drawAnimation]),
-                  builder: (context, child) {
-                    final animatedData = _interpolateData(_drawAnimation.value);
+        return AnimatedBuilder(
+          animation: Listenable.merge([_animation, _drawAnimation]),
+          builder: (context, child) {
+            final animatedData = _interpolateData(_drawAnimation.value);
+            final detectorSize = Size(widget.chartSize, widget.chartSize);
 
-                    final pie = Center(
-                      child: Stack(
-                        clipBehavior: Clip.none,
-                        children: [
-                          SizedBox(
-                            height: widget.chartSize,
-                            width: widget.chartSize,
-                            child: CustomPaint(
-                              key: _chartKey,
-                              painter: ArcPainter(
-                                getLocalizedName: (type) =>
-                                    type.localizedName(context),
-                                items: animatedData,
-                                getArcDataById: (index) => sortedArcData[index],
-                                hoveredCenter: _hoveredCenter,
-                                hoveredIndex: _hoveredIndex,
-                                extensionFactor: _animation.value,
-                                screenWidth: MediaQuery.sizeOf(context).width,
-                                chartGlobalX: _getChartGlobalX(),
-                              ),
-                              child: Center(
-                                child: InfoPanel(
-                                  total: totalCount,
-                                  rejections:
-                                      rejectionsCount + rejectedDetailedCount,
-                                  offers: offerCount,
-                                ),
-                              ),
+            final pieContent = Center(
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  SizedBox(
+                    height: widget.chartSize,
+                    width: widget.chartSize,
+                    child: MouseRegion(
+                      onHover: (event) =>
+                          _updateInteraction(
+                            event.localPosition,
+                            sortedArcData,
+                            detectorSize,
+                            widget.chartSize,
+                          ),
+                      onExit: (event) {
+                        setState(() {
+                          _hoveredIndex = null;
+                          _hoveredCenter = null;
+                        });
+                        _controller.reverse();
+                      },
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTapDown: (details) =>
+                            _updateInteraction(
+                              details.localPosition,
+                              sortedArcData,
+                              detectorSize,
+                              widget.chartSize,
+                            ),
+                        child: CustomPaint(
+                          key: _chartKey,
+                          painter: ArcPainter(
+                            getLocalizedName: (type) =>
+                                type.localizedName(context),
+                            items: animatedData,
+                            getArcDataById: (index) => sortedArcData[index],
+                            hoveredCenter: _hoveredCenter,
+                            hoveredIndex: _hoveredIndex,
+                            extensionFactor: _animation.value,
+                            screenWidth: MediaQuery
+                                .sizeOf(context)
+                                .width,
+                            chartGlobalX: _getChartGlobalX(),
+                          ),
+                          child: Center(
+                            child: InfoPanel(
+                              total: totalCount,
+                              rejections:
+                              rejectionsCount + rejectedDetailedCount,
+                              offers: offerCount,
                             ),
                           ),
-                        ],
+                        ),
                       ),
-                    );
-
-                    return context.isMobile
-                        ? pie
-                        : ConstrainedBox(
-                            constraints: BoxConstraints(maxWidth: 300),
-                            child: pie,
-                          );
-                  },
-                ),
+                    ),
+                  ),
+                ],
               ),
+            );
+
+            return context.isMobile
+                ? pieContent
+                : SizedBox(
+              width: 230,
+              child: pieContent,
             );
           },
         );
@@ -207,7 +204,9 @@ class _ChartWidgetState extends ConsumerState<PieWidget>
       loading: () => Center(child: const CircularProgressIndicator(),),
     );
 
-    return Panel(title: context.res.overview, height: 250, child: chartWidget);
+    return Panel(title: context.res.overview,
+        innerPadding: const EdgeInsets.all(16),
+        height: 250, child: chartWidget);
   }
 
   double _getChartGlobalX() {

@@ -69,9 +69,7 @@ class LineChartCard extends StatelessWidget {
           children: [
             Expanded(child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: SizedBox(
+              child: SizedBox(
                   width: 650,
                   child: LineChart(
                     LineChartData(
@@ -203,13 +201,13 @@ class LineChartCard extends StatelessWidget {
                   ),
                 ),
               ),
-            ),
+
             ),
             //Legend
 
             const SizedBox(height: 12),
             const Padding(
-              padding: EdgeInsetsGeometry.symmetric(horizontal: 32),
+              padding: EdgeInsetsGeometry.symmetric(horizontal: 24),
               child: LegendWidget(),
             ),
           ],

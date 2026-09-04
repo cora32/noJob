@@ -22,7 +22,7 @@ class DashboardScreen extends StatelessWidget {
           SizedBox(
             child: Wrap(
               textDirection: TextDirection.rtl,
-              verticalDirection: VerticalDirection.down,
+              verticalDirection: VerticalDirection.up,
               alignment: WrapAlignment.center,
               crossAxisAlignment: WrapCrossAlignment.center,
               spacing: 16.0,
