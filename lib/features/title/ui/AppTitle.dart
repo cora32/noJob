@@ -1,11 +1,12 @@
 import 'dart:math';
 
-import 'package:nojob/features/navigation/presentation/providers/navigation_provider.dart';
-import 'package:nojob/features/title/ui/AppTitleProvider.dart';
-import 'package:nojob/shared/extensions.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nojob/features/navigation/presentation/viewmodels/navigation_viewmodel.dart';
+import 'package:nojob/features/title/ui/AppTitleProvider.dart';
+import 'package:nojob/shared/extensions.dart';
+import 'package:nojob/shared/providers.dart';
 
 class AppTitle extends StatelessWidget {
   const AppTitle({super.key});
@@ -15,7 +16,7 @@ class AppTitle extends StatelessWidget {
     return Consumer(
       builder: (context, ref, child) {
         final themeState = ref.watch(appTitleProvider);
-        final currentScreen = ref.watch(navigationProvider);
+        final currentScreen = ref.watch(navigationViewModel);
 
         return themeState.when(
           data: (state) => SizedBox(
@@ -29,7 +30,7 @@ class AppTitle extends StatelessWidget {
                     child: IconButton(
                       icon: const Icon(Icons.arrow_back),
                       onPressed: () =>
-                          ref.read(navigationProvider.notifier).goBack(),
+                          ref.read(navigationViewModel.notifier).goBack(),
                     ),
                   ),
                 Column(

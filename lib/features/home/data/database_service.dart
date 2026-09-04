@@ -1,10 +1,7 @@
 import 'dart:io';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-
-final dbProvider = Provider((ref) => DatabaseService());
 
 class DatabaseService {
   static Database? _database;
@@ -50,7 +47,7 @@ class DatabaseService {
     return await factory.openDatabase(
       path,
       options: OpenDatabaseOptions(
-        version: 3,
+        version: 4,
         onCreate: _onCreateInternal,
         onUpgrade: _onUpgradeInternal,
       ),
@@ -79,6 +76,12 @@ class DatabaseService {
       await db.execute(
           'ALTER TABLE jobs ADD COLUMN source TEXT NOT NULL DEFAULT "unknown"');
     }
+    if (oldVersion < 4) {
+      await db.execute('CREATE INDEX idx_jobs_title ON jobs(title)');
+      await db.execute(
+          'CREATE INDEX idx_jobs_description ON jobs(description)');
+      await db.execute('CREATE INDEX idx_jobs_status ON jobs(status)');
+    }
   }
 
   static Future<void> _onCreateInternal(Database db, int version) async {
@@ -93,6 +96,9 @@ class DatabaseService {
         source TEXT NOT NULL
       )
     ''');
+    await db.execute('CREATE INDEX idx_jobs_title ON jobs(title)');
+    await db.execute('CREATE INDEX idx_jobs_description ON jobs(description)');
+    await db.execute('CREATE INDEX idx_jobs_status ON jobs(status)');
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async =>
