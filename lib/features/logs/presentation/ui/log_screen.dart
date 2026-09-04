@@ -8,14 +8,16 @@ import 'package:nojob/shared/scrapper/base_scrapper.dart';
 import 'package:nojob/shared/shared.dart';
 
 class LogWidget extends ConsumerWidget {
-  final ScrapedVacancy? Function(String) fetchVacancy;
-  final Function(String, String, String) addJob;
+  final Future<ScrapedVacancy?> Function(String) fetchVacancy;
+  final Future<void> Function(String, String, String) addJob;
 
   const LogWidget({
     super.key,
     required this.fetchVacancy,
     required this.addJob,
-  })@override
+  });
+
+  @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Card(
       elevation: 4,
@@ -37,8 +39,7 @@ class LogWidget extends ConsumerWidget {
                     onPressed: () {
                       showDialog(
                         context: context,
-                        builder: (context) =>
-                        const AddJobDialog(
+                        builder: (context) => AddJobDialog(
                           fetchVacancy: fetchVacancy,
                           addJob: addJob,
                         ),
@@ -57,10 +58,14 @@ class LogWidget extends ConsumerWidget {
 }
 
 class AddJobDialog extends ConsumerStatefulWidget {
-  final ScrapedVacancy? Function(String) fetchVacancy;
-  final Function(String, String, String) addJob;
+  final Future<ScrapedVacancy?> Function(String) fetchVacancy;
+  final Future<void> Function(String, String, String) addJob;
 
-  const AddJobDialog({super.key, this.fetchVacancy, this.addJob,});
+  const AddJobDialog({
+    super.key,
+    required this.fetchVacancy,
+    required this.addJob,
+  });
 
   @override
   ConsumerState<AddJobDialog> createState() => _AddJobDialogState();

@@ -6,6 +6,7 @@ import 'package:nojob/features/logs/presentation/ui/log_item.dart';
 import 'package:nojob/features/logs/presentation/ui/log_widget2.dart';
 import 'package:nojob/shared/extensions.dart';
 import 'package:nojob/shared/providers.dart';
+import 'package:nojob/shared/scrapper/base_scrapper.dart';
 
 class FullLogScreen extends ConsumerWidget {
   const FullLogScreen({super.key});
@@ -24,14 +25,14 @@ class FullLogScreen extends ConsumerWidget {
           .updateStatus(id!, newStatus!);
     }
 
-    void onSave(String link, String title, String description) {
-      ref
+    Future<void> onSave(String title, String description, String link) {
+      return ref
           .read(searchViewModel.notifier)
           .addJob(title, description, link);
     }
 
-    void fetchVacancy(String link) {
-      ref
+    Future<ScrapedVacancy?> fetchVacancy(String link) {
+      return ref
           .read(searchViewModel.notifier)
           .fetchVacancy(link);
     }

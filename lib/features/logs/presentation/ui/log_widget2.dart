@@ -22,7 +22,17 @@ class LogWidget2 extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Align(alignment: Alignment.centerRight, child: AddButton()),
+            Align(
+              alignment: Alignment.centerRight,
+              child: AddButton(
+                addJob: ref
+                    .read(logsViewModel.notifier)
+                    .addJob,
+                fetchVacancy: ref
+                    .read(logsViewModel.notifier)
+                    .fetchVacancy,
+              ),
+            ),
             const SizedBox(height: 16),
             const Last8List(count: PREVIEW_LOGS_COUNT),
             const SizedBox(height: 8),
@@ -45,8 +55,8 @@ class LogWidget2 extends ConsumerWidget {
 }
 
 class AddButton extends StatelessWidget {
-  final ScrapedVacancy? Function(String) fetchVacancy;
-  final Function(String, String, String) addJob;
+  final Future<ScrapedVacancy?> Function(String) fetchVacancy;
+  final Future<void> Function(String, String, String) addJob;
 
   const AddButton(
       {super.key, required this.addJob, required this.fetchVacancy});
@@ -54,16 +64,16 @@ class AddButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsetsGeometry.only(right: 16),
+      padding: const EdgeInsets.only(right: 16),
       child: TextButton(
         onPressed: () async {
           await showDialog(
             context: context,
             builder: (context) =>
-            const AddJobDialog(
-              addJob,
-              fetchVacancy,),
-
+                AddJobDialog(
+                  addJob: addJob,
+                  fetchVacancy: fetchVacancy,
+                ),
           );
         },
         child: const Text(" + Add"),
