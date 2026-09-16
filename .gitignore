@@ -46,3 +46,6 @@ app.*.map.json
 
 # Generated localization files
 lib/l10n/app_localizations*.dart
+
+# Generated code-runner serialization files
+*.g.dart

@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:math';
 
+import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:nojob/features/title/ui/AppTitleProvider.dart';
@@ -45,5 +47,13 @@ extension ContextExt on BuildContext {
         showCloseIcon: true,
       ),
     );
+  }
+}
+
+extension Sha256Ext on String {
+  String toSha256() {
+    final bytes = utf8.encode(this);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
   }
 }

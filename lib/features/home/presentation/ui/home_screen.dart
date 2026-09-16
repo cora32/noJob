@@ -5,6 +5,9 @@ import 'package:nojob/features/logs/presentation/ui/log_widget2.dart';
 import 'package:nojob/features/url_input/presentation/url_field_widget.dart';
 import 'package:nojob/shared/extensions.dart';
 import 'package:nojob/shared/ui/horizontal_line_label.dart';
+import 'package:nojob/shared/logger.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:snapshot_system/data/db.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -19,6 +22,43 @@ class DashboardScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           if (context.isMobile) const SizedBox(height: 16),
+          Row(
+            children: [
+              TextButton(onPressed: () async {
+                l.e("add pressed");
+                final id = await SnapshotAPI(1).add("testname_testdesc");
+
+
+                final prefs = await SharedPreferences.getInstance();
+
+                prefs.setInt("key", id);
+
+                l.e("add result: $id");
+              }, child: Text("Add")),
+              TextButton(onPressed: () async {
+                final test = "test_string";
+                final hash = test.toSha256();
+                final id = await SnapshotAPI(1).remove(hash);
+
+                l.e("remove result: $id");
+              }, child: Text("remove")),
+              TextButton(onPressed: () async {
+                final test = "test_string";
+                final hash = test.toSha256();
+                final id = await SnapshotAPI(1).modify(hash, "new_data");
+
+                l.e("modify result: $id");
+              }, child: Text("modify")),
+              TextButton(onPressed: () async {
+                final result = await SnapshotAPI(1).getAll();
+
+                final data = result.map((e) => e.toJson()).toList();
+
+                l.e("getAll result: $data");
+              }, child: Text("get all"))
+            ],
+          ),
+
           SizedBox(
             child: Wrap(
               textDirection: TextDirection.rtl,
