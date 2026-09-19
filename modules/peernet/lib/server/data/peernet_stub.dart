@@ -1,7 +1,20 @@
-import 'package:peernet/server/domain/i_peernet.dart';
-import 'package:peernet/server/domain/transfer.dart';
+import 'dart:async';
 
-PeerNet getInstance() => PeerNetStub();
+import 'package:peernet/server/domain/i_peernet.dart';
+import 'package:peernet/server/domain/peer_data.dart';
+import 'package:snapshot_system/data/storage.dart';
+
+PeerNet getInstance({
+  int snapshotVersion = 1,
+  IStorage storage = const Storage(),
+  required FutureOr<String> Function() calculateHashForDB,
+  required FutureOr<int> Function() getDBCount,
+}) => PeerNetStub.getInstance(
+  snapshotVersion: 1,
+  storage: const Storage(),
+  calculateHashForDB: () async => "stub",
+  getDBCount: () async => 0,
+);
 
 class PeerNetComms implements IPeerNetComms {
   PeerNetComms._();
@@ -21,7 +34,7 @@ class PeerNetComms implements IPeerNetComms {
   }
 
   @override
-  Future<VersionData> getVersionData() {
+  Future<PeerData> getVersionData() {
     // TODO: implement getVersionData
     throw UnimplementedError();
   }
@@ -32,12 +45,16 @@ class PeerNetStub implements PeerNet {
 
   PeerNetStub._();
 
-  factory PeerNetStub() => _instance;
+  factory PeerNetStub({required int snapshotVersion}) => _instance;
 
-  @override
-  DataCallback? onGetSyncData;
-  @override
-  VersionDataCallback? onGetVersion;
+  factory PeerNetStub.getInstance({
+    int snapshotVersion = 1,
+    IStorage storage = const Storage(),
+    required FutureOr<String> Function() calculateHashForDB,
+    required FutureOr<int> Function() getDBCount,
+  }) {
+    return PeerNetStub._();
+  }
 
   @override
   Future<void> discover(
@@ -57,5 +74,29 @@ class PeerNetStub implements PeerNet {
     // Noop for web target
 
     return PeerNetComms.stub;
+  }
+
+  @override
+  FutureOr<String> Function()? calculateHashForDB;
+
+  @override
+  FutureOr<int> Function()? getCount;
+
+  @override
+  Future<void> fetchData() {
+    // TODO: implement fetchData
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> startListening() {
+    // TODO: implement startListening
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> startServer(int peerNetPort, int discoveryPort) {
+    // TODO: implement startServer
+    throw UnimplementedError();
   }
 }

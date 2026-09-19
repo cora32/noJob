@@ -1,4 +1,4 @@
-package com.example.snapshot_system
+package io.iskopasi.snapshot_system
 
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.plugin.common.MethodCall

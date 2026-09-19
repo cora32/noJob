@@ -4,10 +4,10 @@ import 'package:nojob/features/home/presentation/ui/pie_chart.dart';
 import 'package:nojob/features/logs/presentation/ui/log_widget2.dart';
 import 'package:nojob/features/url_input/presentation/url_field_widget.dart';
 import 'package:nojob/shared/extensions.dart';
-import 'package:nojob/shared/ui/horizontal_line_label.dart';
 import 'package:nojob/shared/logger.dart';
+import 'package:nojob/shared/ui/horizontal_line_label.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:snapshot_system/data/db.dart';
+import 'package:snapshot_system/data/snapshot_api.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});

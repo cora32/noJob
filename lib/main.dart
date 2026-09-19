@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:logger/logger.dart';
 import 'package:nojob/features/home/presentation/ui/home_screen.dart';
 import 'package:nojob/features/logs/presentation/ui/full_log_screen.dart';
 import 'package:nojob/features/navigation/presentation/viewmodels/navigation_viewmodel.dart';
@@ -16,7 +15,6 @@ import 'package:nojob/shared/providers.dart';
 import 'package:nojob/shared/server/server.dart';
 import 'package:path/path.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:snapshot_system/data/db.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 Future<void> main() async {
@@ -43,9 +41,6 @@ Future<void> main() async {
 
   // PeerNet init
   startPeerNet(dbPath);
-
-  // Snapshot init
-  SnapshotAPI(1);
 
   // Discover peer nodes
   startPeerNodesDiscovery();

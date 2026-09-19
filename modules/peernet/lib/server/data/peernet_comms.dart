@@ -1,8 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:peernet/server/domain/i_peernet.dart';
-import 'package:peernet/server/domain/transfer.dart';
+import 'package:peernet/server/domain/peer_data.dart';
 
 class PeerNetComms implements IPeerNetComms {
   final WebSocket _socket;
@@ -39,9 +40,9 @@ class PeerNetComms implements IPeerNetComms {
   }
 
   @override
-  Future<VersionData> getVersionData() async {
+  Future<PeerData> getVersionData() async {
     final response = await _send(MsgTypes.getVersionData.name);
-    return VersionData.fromJson(response.toString());
+    return PeerData.fromJson(jsonDecode(response.toString()));
   }
 
   @override

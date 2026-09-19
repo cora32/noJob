@@ -1,4 +1,4 @@
-package com.example.snapshot_system
+package io.iskopasi.snapshot_system
 
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel

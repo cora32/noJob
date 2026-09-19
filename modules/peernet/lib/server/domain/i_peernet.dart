@@ -1,26 +1,40 @@
 import 'dart:async';
 
-import 'package:peernet/server/domain/transfer.dart';
+import 'package:peernet/server/domain/peer_data.dart';
 
 typedef DataCallback = FutureOr<String> Function(dynamic data);
-typedef VersionDataCallback = FutureOr<VersionData> Function(dynamic data);
+typedef VersionDataCallback = FutureOr<PeerData> Function(dynamic data);
 typedef OnPeerFoundCallback = FutureOr<void> Function(PeerData peer);
+
+sealed class ReplicationStrategy {}
+
+class NoReplication extends ReplicationStrategy {}
+
+class FullReplication extends ReplicationStrategy {}
+
+class PartialFetch extends ReplicationStrategy {
+  final int startFromTimestamp;
+
+  PartialFetch(this.startFromTimestamp);
+}
+
+enum CommandMessages { peerHere }
 
 enum MsgTypes { getSyncData, getVersionData }
 
 abstract interface class IPeerNetComms {
   Future<String> getSyncData();
 
-  Future<VersionData> getVersionData();
+  Future<PeerData> getVersionData();
 
   Future<void> disconnect();
 }
 
 abstract interface class PeerNet {
-  DataCallback? onGetSyncData;
-  VersionDataCallback? onGetVersion;
+  // FutureOr<int> Function()? getCount;
+  // FutureOr<String> Function()? calculateHashForDB;
 
-  Future<void> start(int peerNetPort, int discoveryPort);
+  Future<void> startServer(int peerNetPort, int discoveryPort);
 
   Future<void> discover(
     OnPeerFoundCallback callback, {
@@ -28,4 +42,8 @@ abstract interface class PeerNet {
   });
 
   Future<IPeerNetComms> connect(String ip, {int port = 7834});
+
+  Future<void> startListening();
+
+  Future<void> fetchData();
 }

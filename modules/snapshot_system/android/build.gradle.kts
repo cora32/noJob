@@ -1,4 +1,4 @@
-group = "com.example.snapshot_system"
+group = "io.iskopasi.snapshot_system"
 version = "1.0-SNAPSHOT"
 
 buildscript {
@@ -26,7 +26,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.snapshot_system"
+    namespace = "io.iskopasi.snapshot_system"
 
     compileSdk = 36
 

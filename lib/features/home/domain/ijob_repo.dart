@@ -1,3 +1,5 @@
+import 'dart:async';
+
 class JobData {
   final int? id;
   final DateTime date;
@@ -83,4 +85,6 @@ abstract class IJobRepo {
   Future<int> countTotal();
 
   Future<List<JobData>> searchLogs(String query);
+
+  // Future<FutureOr<String>> calculateFullDBHashPaged() async {}
 }

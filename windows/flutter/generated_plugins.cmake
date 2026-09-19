@@ -4,7 +4,6 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   flutter_inappwebview_windows
-        snapshot_system
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST

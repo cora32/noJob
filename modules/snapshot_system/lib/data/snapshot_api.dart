@@ -1,6 +1,10 @@
+import 'dart:convert';
+
+import 'package:convert/convert.dart';
+import 'package:crypto/crypto.dart';
 import 'package:logger/logger.dart';
 import 'package:path/path.dart';
-import 'package:snapshot_system/data/log_entry.dart';
+import 'package:snapshot_system/domain/log_entry.dart';
 import 'package:sqflite/sqflite.dart';
 
 abstract interface class ISnapshotAPI {
@@ -11,6 +15,8 @@ abstract interface class ISnapshotAPI {
   Future<int> modify(String hash, String newData);
 
   Future<List<LogEntry>> getAll();
+
+  Future<String> calculateHashForSnapshot();
 }
 
 class SnapshotAPI extends ISnapshotAPI {
@@ -29,10 +35,10 @@ class SnapshotAPI extends ISnapshotAPI {
   }
 
   Future<Database> get db async {
-    _logger.i("[SnapshotAPI] initing db...");
+    _logger.i("[SnapshotAPI] Initing db...");
     var databasesPath = await getDatabasesPath();
     String path = join(databasesPath, 'snapshot.db');
-    _logger.i("[SnapshotAPI] Path path: $path; version: $_version");
+    _logger.i("[SnapshotAPI] Snapshot path: $path; version: $_version");
     _db ??= await openDatabase(
       path,
       version: _version,
@@ -115,5 +121,59 @@ class SnapshotAPI extends ISnapshotAPI {
 
       return LogEntry(operation: op, hash: hash, data: data);
     });
+  }
+
+  @override
+  Future<String> calculateHashForSnapshot() async {
+    final database = await db;
+    // 1. Get the total row count to check if empty
+    final countResult = await database.rawQuery(
+        'SELECT COUNT(*) as count FROM Snapshot');
+    final int totalRows = countResult.first['count'] as int? ?? 0;
+
+    if (totalRows == 0) {
+      return sha256.convert(utf8.encode("EMPTY_DATABASE")).toString();
+    }
+
+    // 2. Initialize the cryptographic chunk accumulator stream
+    final output = AccumulatorSink<Digest>();
+    final hashStream = sha256.startChunkedConversion(output);
+
+    const int pageSize = 100; // Process 100 records at a time
+    int offset = 0;
+
+    // 3. Incrementally loop through the database using pages
+    while (offset < totalRows) {
+      // Fetch a single small page chunk, sorted deterministically by ID
+      final List<Map<String, dynamic>> rows = await database.query(
+        'Snapshot',
+        orderBy: 'id ASC',
+        // Deterministic ordering is mandatory for identical hashes
+        limit: pageSize,
+        offset: offset,
+      );
+
+      // If no more rows are returned unexpectedly, break out
+      if (rows.isEmpty) break;
+
+      // 4. Process the current page chunk row by row
+      for (final row in rows) {
+        final rowString =
+            '${row['data']}|'
+            '${row['timestamp']}|\n';
+
+        // Push the row bytes straight into the active hash chunk accumulator
+        hashStream.add(utf8.encode(rowString));
+      }
+
+      // 5. Shift the pointer window forward to the next page chunk
+      offset += pageSize;
+    }
+
+    // 6. Close the accumulator stream to compute final fingerprint digest
+    hashStream.close();
+
+    // 7. Extract the aggregated hex string signature representation
+    return output.events.single.toString();
   }
 }

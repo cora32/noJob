@@ -17,7 +17,7 @@ class StorageService {
   }
 }
 
-// Provider that should be initialized in main.dart
+// Provider that should be initialized in snapshot_system.dart
 final storageServiceProvider = Provider<StorageService>((ref) {
   throw UnimplementedError(
     'storageServiceProvider must be overridden in ProviderScope',

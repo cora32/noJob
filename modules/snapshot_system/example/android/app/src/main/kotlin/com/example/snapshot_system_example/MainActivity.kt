@@ -1,4 +1,4 @@
-package com.example.snapshot_system_example
+package io.iskopasi.snapshot_system_example
 
 import io.flutter.embedding.android.FlutterActivity
 
