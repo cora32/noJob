@@ -14,6 +14,10 @@ abstract interface class IStorage {
   Future<void> setSnapshotHash(String hash);
 
   Future<String> getSnapshotHash();
+
+  Future<void> setStartTime(int timestamp);
+
+  Future<int> getStartTime();
 }
 
 class Storage implements IStorage {
@@ -54,5 +58,15 @@ class Storage implements IStorage {
   @override
   Future<String> getSnapshotHash() async {
     return (await prefs).getString('${_prefix}_snapshot_hash') ?? "";
+  }
+
+  @override
+  Future<void> setStartTime(int timestamp) async {
+    (await prefs).setInt('${_prefix}_startTime', timestamp);
+  }
+
+  @override
+  Future<int> getStartTime() async {
+    return (await prefs).getInt('${_prefix}_startTime') ?? 0;
   }
 }

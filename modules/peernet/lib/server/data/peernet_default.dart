@@ -37,8 +37,12 @@ class PeerNetDefault implements PeerNet {
   bool _isStarted = false;
   int _peerNetPort = 0;
 
-  int getUptime() {
-    return 0;
+  Future<int> getUptime() async {
+    final startTime = await _storage.getStartTime();
+    if (startTime == 0) return 0;
+    return (DateTime
+        .now()
+        .millisecondsSinceEpoch - startTime) ~/ 1000;
   }
 
   late final _handler = webSocketHandler((ws, protocol) {
@@ -48,10 +52,11 @@ class PeerNetDefault implements PeerNet {
       if (msg == MsgTypes.GetInfo.name) {
         final snapshotHash = await _snapshot.getHashFromSnapshot();
         final dbHash = await _snapshot.getHashFromDB();
+        final uptime = await getUptime();
 
         ws.sink.add(json.encode(PeerData(
             ip: "",
-            uptime: getUptime(),
+            uptime: uptime,
             dbHash: dbHash,
             snapshotHash: snapshotHash).toJson()));
       } else {
@@ -92,6 +97,11 @@ class PeerNetDefault implements PeerNet {
 
     // 2. UDP Discovery Responder
     await _discoveryApi.start();
+
+    // 3. Record session start time
+    await _storage.setStartTime(DateTime
+        .now()
+        .millisecondsSinceEpoch);
   }
 
   Stream<PeerData> _discoverPeers() async* {
