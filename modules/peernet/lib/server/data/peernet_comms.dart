@@ -6,10 +6,12 @@ import 'package:peernet/server/domain/i_peernet.dart';
 import 'package:peernet/server/domain/peer_data.dart';
 
 class PeerNetComms implements IPeerNetComms {
-  final WebSocket _socket;
+  final String _ip;
+  final int _port;
+  late WebSocket _socket;
   final _completers = <Completer<dynamic>>[];
 
-  PeerNetComms({required this._socket}) {
+  PeerNetComms(this._ip, this._port) {
     _socket.listen(
       (msg) {
         if (_completers.isNotEmpty) {
@@ -26,6 +28,12 @@ class PeerNetComms implements IPeerNetComms {
     );
   }
 
+  Future<WebSocket> connect() async {
+    _socket = await WebSocket.connect('ws://$_ip:$_port');
+
+    return _socket;
+  }
+
   Future<dynamic> _send(String msg) {
     final completer = Completer<dynamic>();
     _completers.add(completer);
@@ -34,19 +42,28 @@ class PeerNetComms implements IPeerNetComms {
   }
 
   @override
-  Future<String> getSyncData() async {
-    final response = await _send(MsgTypes.getSyncData.name);
-    return response.toString();
-  }
-
-  @override
-  Future<PeerData> getVersionData() async {
-    final response = await _send(MsgTypes.getVersionData.name);
+  Future<PeerData> getInfo() async {
+    final response = await _send(MsgTypes.GetInfo.name);
     return PeerData.fromJson(jsonDecode(response.toString()));
   }
 
   @override
   Future<void> disconnect() async {
     await _socket.close();
+  }
+}
+
+extension CommsExt on PeerData {
+  Future<T> use<T>({int port = 7834,
+    required Future<T> Function(IPeerNetComms comms) block}) async {
+    final comms = PeerNetComms(ip, port);
+
+    try {
+      await comms.connect();
+
+      return await block(comms);
+    } finally {
+      await comms.disconnect();
+    }
   }
 }

@@ -7,12 +7,6 @@ class PeerData {
   final String ip;
   final int uptime;
 
-  @JsonKey(name: "db_version")
-  final int dbVersion;
-
-  @JsonKey(name: "db_timestamp")
-  final int dbTimestamp;
-
   @JsonKey(name: "db_hash")
   final String dbHash;
 
@@ -22,8 +16,6 @@ class PeerData {
   PeerData({
     required this.ip,
     required this.uptime,
-    required this.dbVersion,
-    required this.dbTimestamp,
     required this.dbHash,
     required this.snapshotHash,
   });

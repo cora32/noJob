@@ -4,47 +4,59 @@ import 'package:logger/logger.dart';
 import 'package:snapshot_system/data/snapshot_api.dart';
 import 'package:snapshot_system/data/storage.dart';
 import 'package:snapshot_system/domain/log_entry.dart';
+import 'package:snapshot_system/domain/peer_data_hash.dart';
 
+sealed class ReplicationStrategy {}
 
-abstract class ISnapshotSystem implements ISnapshotAPI {
-  late FutureOr<String> Function() calculateHashForDB;
-  late FutureOr<int> Function() getDBCount;
+class NoReplication extends ReplicationStrategy {}
 
+class FullReplication extends ReplicationStrategy {}
+
+class PartialFetch extends ReplicationStrategy {
+  final int startFromTimestamp;
+
+  PartialFetch(this.startFromTimestamp);
+}
+
+abstract class ISnapshot implements ISnapshotAPI {
   Future<int> getLastSyncTimestamp();
 
   Future<String> getHashFromDB();
 
   Future<String> getHashFromSnapshot();
+
+  Future<ReplicationStrategy> getReplicationStrategy(List<PeerDataHash> peers,);
 }
 
-class SnapshotSystem extends ISnapshotSystem {
+class Snapshot extends ISnapshot {
   final _logger = Logger(
     printer: PrettyPrinter(),
   );
 
   final IStorage storage;
-  static SnapshotSystem? _instance;
+  static Snapshot? _instance;
   late final SnapshotAPI _api;
   Timer? _checkpointTimer;
 
-  @override
-  FutureOr<String> Function() calculateHashForDB;
-  @override
-  FutureOr<int> Function() getDBCount;
+  FutureOr<String> Function() onGetDBHash;
+  FutureOr<int> Function() onGetDBCount;
 
-  SnapshotSystem._(int version,
+  Snapshot._(int version,
       this.storage,
-      this.calculateHashForDB,
-      this.getDBCount,) {
+      this.onGetDBHash,
+      this.onGetDBCount,) {
     _api = SnapshotAPI(version);
   }
 
-  factory SnapshotSystem(int version,
+  factory Snapshot(int version,
       IStorage storage,
-      FutureOr<String> Function() calculateHashForDB,
-      FutureOr<int> Function() getDBCount) {
+
+      {
+        required FutureOr<String> Function() onGetDBHash,
+        required FutureOr<int> Function() onGetDBCount
+      }) {
     _instance ??=
-        SnapshotSystem._(version, storage, calculateHashForDB, getDBCount);
+        Snapshot._(version, storage, onGetDBHash, onGetDBCount);
 
     return _instance!;
   }
@@ -104,7 +116,7 @@ class SnapshotSystem extends ISnapshotSystem {
   Future<void> _checkpoint() async {
     _logger.i("[SnapshotSystem] Checkpoint");
 
-    final dbHash = await calculateHashForDB();
+    final dbHash = await onGetDBHash();
     final snapshotHash = await _api.calculateHashForSnapshot();
     final timestamp = DateTime
         .now()
@@ -144,4 +156,42 @@ class SnapshotSystem extends ISnapshotSystem {
 
   @override
   Future<String> calculateHashForSnapshot() => _api.calculateHashForSnapshot();
+
+  @override
+  Future<ReplicationStrategy> getReplicationStrategy(
+      List<PeerDataHash> peers,) async {
+    final count = onGetDBCount();
+    final isDbEmpty = count == 0;
+    final todayMinus7 = DateTime
+        .now()
+        .subtract(const Duration(days: 7))
+        .millisecondsSinceEpoch;
+    final lastSyncTimestamp = await getLastSyncTimestamp();
+    final isTooOld = lastSyncTimestamp >= todayMinus7;
+    final dbHash = await getHashFromDB();
+    final snapshotHash = await getHashFromSnapshot();
+
+    peers.sort((a, b) => b.uptime.compareTo(a.uptime));
+    var isUpToDate = true;
+    for (final peer in peers) {
+      if (dbHash != peer.dbHash || snapshotHash != peer.snapshotHash) {
+        isUpToDate = false;
+        break;
+      }
+    }
+
+    _logger.i("[PeerNet]: DB count: $count\n"
+        " isDbEmpty: $isDbEmpty\n"
+        " isTooOld: $isTooOld\n"
+        " isUpToDate: $isUpToDate\n"
+        " lastSyncTimestamp: $lastSyncTimestamp");
+
+    if (isDbEmpty || isTooOld || lastSyncTimestamp == 0) {
+      return FullReplication();
+    } else if (isUpToDate) {
+      return NoReplication();
+    } else {
+      return PartialFetch(lastSyncTimestamp);
+    }
+  }
 }

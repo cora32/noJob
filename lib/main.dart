@@ -42,9 +42,6 @@ Future<void> main() async {
   // PeerNet init
   startPeerNet(dbPath);
 
-  // Discover peer nodes
-  startPeerNodesDiscovery();
-
   // SharedPrefs init
   final prefs = await SharedPreferences.getInstance();
 

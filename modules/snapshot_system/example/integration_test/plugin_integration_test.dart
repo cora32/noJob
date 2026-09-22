@@ -8,8 +8,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-
-import 'package:snapshot_system/snapshot_system.dart';
+import 'package:snapshot_system/snapshot.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();

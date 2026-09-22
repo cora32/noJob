@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:snapshot_system/snapshot_system.dart';
-import 'package:snapshot_system/snapshot_system_platform_interface.dart';
-import 'package:snapshot_system/snapshot_system_method_channel.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'package:snapshot_system/snapshot.dart';
+import 'package:snapshot_system/snapshot_system_method_channel.dart';
+import 'package:snapshot_system/snapshot_system_platform_interface.dart';
 
 class MockSnapshotSystemPlatform
     with MockPlatformInterfaceMixin

@@ -5,15 +5,9 @@ import 'package:peernet/server/domain/peer_data.dart';
 import 'package:snapshot_system/data/storage.dart';
 
 PeerNet getInstance({
-  int snapshotVersion = 1,
   IStorage storage = const Storage(),
-  required FutureOr<String> Function() calculateHashForDB,
-  required FutureOr<int> Function() getDBCount,
 }) => PeerNetStub.getInstance(
-  snapshotVersion: 1,
   storage: const Storage(),
-  calculateHashForDB: () async => "stub",
-  getDBCount: () async => 0,
 );
 
 class PeerNetComms implements IPeerNetComms {
@@ -50,17 +44,14 @@ class PeerNetStub implements PeerNet {
   factory PeerNetStub.getInstance({
     int snapshotVersion = 1,
     IStorage storage = const Storage(),
-    required FutureOr<String> Function() calculateHashForDB,
-    required FutureOr<int> Function() getDBCount,
   }) {
     return PeerNetStub._();
   }
 
   @override
-  Future<void> discover(
-    OnPeerFoundCallback callback, {
+  Stream<PeerData> discover({
     int discoveryPort = 7835,
-  }) async {
+  }) async* {
     // Noop for web target
   }
 
@@ -77,26 +68,23 @@ class PeerNetStub implements PeerNet {
   }
 
   @override
-  FutureOr<String> Function()? calculateHashForDB;
-
-  @override
-  FutureOr<int> Function()? getCount;
-
-  @override
-  Future<void> fetchData() {
-    // TODO: implement fetchData
-    throw UnimplementedError();
+  Future<void> fetchData() async {
   }
 
   @override
-  Future<void> startListening() {
-    // TODO: implement startListening
-    throw UnimplementedError();
+  Future<void> startListening() async {
   }
 
   @override
-  Future<void> startServer(int peerNetPort, int discoveryPort) {
-    // TODO: implement startServer
-    throw UnimplementedError();
+  Future<void> startServer(int peerNetPort, int discoveryPort,
+      {
+        required Future<String> Function() onGetDBHash,
+        required Future<int> Function() onGetDBCount}) async {
   }
+
+  @override
+  Future<void> synchronizeDB() async {
+  }
+
+
 }

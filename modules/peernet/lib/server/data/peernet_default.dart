@@ -3,199 +3,103 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:logger/logger.dart';
+import 'package:peernet/server/data/discovery_server/discovery_api.dart';
 import 'package:peernet/server/data/peernet_comms.dart';
 import 'package:peernet/server/domain/i_peernet.dart';
 import 'package:peernet/server/domain/peer_data.dart';
-import 'package:peernet/server/domain/peer_net_message.dart';
 import 'package:shelf/shelf_io.dart' as shelf_io;
 import 'package:shelf_web_socket/shelf_web_socket.dart';
 import 'package:snapshot_system/data/storage.dart';
-import 'package:snapshot_system/domain/snapshot_system.dart';
+import 'package:snapshot_system/domain/peer_data_hash.dart';
+import 'package:snapshot_system/domain/snapshot.dart';
 
-PeerNet getInstance({
-  int snapshotVersion = 1,
-  IStorage storage = const Storage(),
-  required FutureOr<String> Function() calculateHashForDB,
-  required FutureOr<int> Function() getDBCount,
-}) =>
-    PeerNetDefault.getInstance(
-      snapshotVersion: snapshotVersion,
-      storage: storage,
-      calculateHashForDB: calculateHashForDB,
-      getDBCount: getDBCount,
-    );
+PeerNet getInstance({IStorage storage = const Storage()}) =>
+    PeerNetDefault.getInstance(storage: storage);
 
 class PeerNetDefault implements PeerNet {
   final _logger = Logger(printer: PrettyPrinter());
+  final IStorage _storage;
+  final int _discoveryPort;
   static PeerNetDefault? _instance;
-  final ISnapshotSystem _snapshot;
+  late ISnapshot _snapshot;
+  late IDiscoveryApi _discoveryApi;
 
-  PeerNetDefault._(this._snapshot);
+  PeerNetDefault._({
+    this._storage = const Storage(),
+    this._discoveryPort = 7835,
+  }) : _discoveryApi = DiscoveryApi(discoveryPort: _discoveryPort);
 
-  factory PeerNetDefault.getInstance({
-    int snapshotVersion = 1,
-    IStorage storage = const Storage(),
-    required FutureOr<String> Function() calculateHashForDB,
-    required FutureOr<int> Function() getDBCount,
-  }) {
-    _instance ??= PeerNetDefault._(
-      SnapshotSystem(snapshotVersion,
-          storage,
-          calculateHashForDB,
-          getDBCount),
-    );
+  factory PeerNetDefault.getInstance({IStorage storage = const Storage()}) {
+    _instance ??= PeerNetDefault._();
     return _instance!;
   }
 
-  RawDatagramSocket? _udpSocket;
   bool _isStarted = false;
+  int _peerNetPort = 0;
 
-  // @override
-  // DataCallback? onGetSyncData;
-  // @override
-  // VersionDataCallback? onGetPeerData;
-  // @override
-  // FutureOr<int> Function()? getCount;
-  // @override
-  // FutureOr<String> Function()? calculateHashForDB;
+  int getUptime() {
+    return 0;
+  }
 
   late final _handler = webSocketHandler((ws, protocol) {
     ws.stream.listen((msg) async {
       _logger.i("[PeerNet]: New message: $msg");
 
-      if (msg == MsgTypes.getSyncData.name) {
-        // if (onGetSyncData != null) {
-        //   final response = await onGetSyncData!(null);
-        //   ws.sink.add(response);
-        // }
-      } else if (msg == MsgTypes.getVersionData.name) {
-        // if (onGetVersion != null) {
-        //   final response = await onGetVersion!(null);
-        //   ws.sink.add(json.encode(response.toJson()));
-        // }
+      if (msg == MsgTypes.GetInfo.name) {
+        final snapshotHash = await _snapshot.getHashFromSnapshot();
+        final dbHash = await _snapshot.getHashFromDB();
+
+        ws.sink.add(json.encode(PeerData(
+            ip: "",
+            uptime: getUptime(),
+            dbHash: dbHash,
+            snapshotHash: snapshotHash).toJson()));
       } else {
         ws.sink.add("Echo: $msg");
       }
     });
   });
 
-  int _peerNetPort = 0;
-  int _discoveryPort = 0;
-
   @override
-  Future<void> discover(
-    OnPeerFoundCallback callback, {
-    int discoveryPort = 7835,
-  }) async {
-    _logger.i("[PeerNet]: Starting discovery scan on port $discoveryPort...");
-    final socket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
-    socket.broadcastEnabled = true;
-
-    socket.listen((event) {
-      if (event == RawSocketEvent.read) {
-        try {
-          final dg = socket.receive();
-
-          if (dg != null) {
-            final jsonString = String.fromCharCodes(dg.data);
-            final peerNetMessage = PeerNetMessage.fromJson(
-              jsonDecode(jsonString),
-            );
-
-            if (peerNetMessage.message == CommandMessages.peerHere) {
-              _logger.i("[PeerNet]: Found peer at ${dg.address.address}");
-
-              final peerData = PeerData.fromJson(
-                jsonDecode(peerNetMessage.json),
-              );
-
-              callback(
-                PeerData(
-                  ip: dg.address.address,
-                  uptime: peerData.uptime,
-                  dbVersion: peerData.dbVersion,
-                  dbTimestamp: peerData.dbTimestamp,
-                  dbHash: peerData.dbHash,
-                  snapshotHash: peerData.snapshotHash,
-                ),
-              );
-            }
-          }
-        } catch (e) {
-          _logger.i("[PeerNet]: Error while parsing inbound message: $e");
-        }
-      }
-    });
-
-    // Broadcast discovery message to the whole network
-    final data = 'PEER_LOOKUP'.codeUnits;
-    socket.send(data, InternetAddress('255.255.255.255'), discoveryPort);
-
-    // Close the scanning socket after a short period
-    Future.delayed(const Duration(seconds: 5), () => socket.close());
+  Stream<PeerData> discover({int discoveryPort = 7835}) async* {
+    yield* _discoveryApi.discover();
   }
 
   @override
-  Future<void> startServer(int peerNetPort, int discoveryPort) async {
+  Future<void> startServer(int peerNetPort,
+      int discoveryPort, {
+        int snapshotVersion = 1,
+        required Future<String> Function() onGetDBHash,
+        required Future<int> Function() onGetDBCount,
+      }) async {
     if (_isStarted) return;
     _isStarted = true;
 
     _peerNetPort = peerNetPort;
-    _discoveryPort = discoveryPort;
+    _snapshot = Snapshot(
+      snapshotVersion,
+      _storage,
+      onGetDBHash: onGetDBHash,
+      onGetDBCount: onGetDBCount,
+    );
 
     _logger.i(
       "[PeerNet]: Starting WS server on port $_peerNetPort; discoveryPort: $_discoveryPort...",
     );
-    try {
-      // 1. TCP Server (WebSocket)
-      await shelf_io.serve(_handler, InternetAddress.anyIPv4, _peerNetPort);
 
-      // 2. UDP Discovery Responder
-      _udpSocket = await RawDatagramSocket.bind(
-        InternetAddress.anyIPv4,
-        _discoveryPort,
-      );
-      _udpSocket?.listen((event) {
-        if (event == RawSocketEvent.read) {
-          final dg = _udpSocket?.receive();
-          if (dg != null) {
-            final message = String.fromCharCodes(dg.data);
-            if (message == 'PEER_LOOKUP') {
-              _logger.i(
-                "[PeerNet]: Responding to discovery from ${dg.address.address}",
-              );
-              _udpSocket?.send('PEER_HERE'.codeUnits, dg.address, dg.port);
-            }
-          }
-        }
-      });
-    } catch (e) {
-      _logger.e("[PeerNet]: Failed to start server: $e");
-    }
+    // 1. TCP Server (WebSocket)
+    await shelf_io.serve(_handler, InternetAddress.anyIPv4, _discoveryPort);
+
+    // 2. UDP Discovery Responder
+    await _discoveryApi.start();
   }
 
-  @override
-  Future<IPeerNetComms> connect(String ip, {int port = 7834}) async {
-    _logger.i("[PeerNet]: Connecting to $ip:$port...");
-    final ws = await WebSocket.connect('ws://$ip:$port');
-    return PeerNetComms(socket: ws);
-  }
-
-  Future<List<PeerData>> _discoverPeers() async {
+  Stream<PeerData> _discoverPeers() async* {
     _logger.i("[PeerNet]: Discovering peers...");
-    final peers = <PeerData>[];
-    await discover((peer) async {
-      _logger.i("[PeerNet]: Peer added: ${peer.ip}");
-      peers.add(peer);
-    });
-
-    // Wait 5 seconds for peers to respond
-    await Future.delayed(Duration(seconds: 5));
-
-    return peers;
+    yield* discover();
   }
 
-  Future<List<PeerData>> _getPeerStatistics(List<PeerData> peers) async {
+  Future<List<PeerData>> _getPeerInfo(List<PeerData> peers) async {
     _logger.i("[PeerNet]: Requesting stats for ${peers.length} peers...");
 
     final stats = <PeerData>[];
@@ -203,15 +107,19 @@ class PeerNetDefault implements PeerNet {
       _logger.i("[PeerNet]: Requesting peer ${peer.ip}...");
 
       try {
-        final comms = await connect(peer.ip);
-        final peerData = await comms.getVersionData();
-        stats.add(peerData);
-
-        _logger.i(
-          "[PeerNet]: Peer: ${peer.ip}: dbVersion: ${peerData.dbVersion}",
+        final peerInfo = await peer.use<PeerData>(
+          block: (IPeerNetComms comms) async {
+            return await comms.getInfo();
+          },
         );
 
-        await comms.disconnect();
+        stats.add(peerInfo);
+
+        _logger.i(
+          "[PeerNet]: Peer: ${peer.ip}; uptime: ${peerInfo
+              .uptime}; dbHash: ${peerInfo.dbHash}; snapshotHash: ${peerInfo
+              .snapshotHash}",
+        );
       } catch (e) {
         _logger.e("[PeerNet]: Failed to connect to $peer: $e");
       }
@@ -220,59 +128,44 @@ class PeerNetDefault implements PeerNet {
     return stats;
   }
 
-  Future<ReplicationStrategy> _getReplicationStrategy(
-      List<PeerData> peers,) async {
-    final count = _snapshot.getDBCount();
-    final isDbEmpty = count == 0;
-    final todayMinus7 = DateTime
-        .now()
-        .subtract(const Duration(days: 7))
-        .millisecondsSinceEpoch;
-    final lastSyncTimestamp = await _snapshot.getLastSyncTimestamp();
-    final isTooOld = lastSyncTimestamp >= todayMinus7;
-    final dbHash = await _snapshot.getHashFromDB();
-    final snapshotHash = await _snapshot.getHashFromSnapshot();
-
-    peers.sort((a, b) => b.uptime.compareTo(a.uptime));
-    var isUpToDate = true;
-    for (final peer in peers) {
-      if (dbHash != peer.dbHash || snapshotHash != peer.snapshotHash) {
-        isUpToDate = false;
-        break;
-      }
-    }
-
-    _logger.i("[PeerNet]: DB count: $count\n"
-        " isDbEmpty: $isDbEmpty\n"
-        " isTooOld: $isTooOld\n"
-        " isUpToDate: $isUpToDate\n"
-        " lastSyncTimestamp: $lastSyncTimestamp");
-
-    if (isDbEmpty || isTooOld || lastSyncTimestamp == 0) {
-      return FullReplication();
-    } else if (isUpToDate) {
-      return NoReplication();
-    } else {
-      return PartialFetch(lastSyncTimestamp);
-    }
-  }
-
-  Future<List<PeerData>> _getPeers() async {
+  Future<List<PeerData>> _fetchPeerInfo() async {
     // Discovered peers
-    final peers = await _discoverPeers();
+    final peers = await _discoverPeers().toList();
+
+    if (peers.isEmpty) {
+      _logger.i("[PeerNet]: No peers detected.");
+
+      return [];
+    }
 
     // Get peer statistics
-    final stats = await _getPeerStatistics(peers);
+    final stats = await _getPeerInfo(peers);
 
     return stats;
   }
 
+  @override
   Future<void> synchronizeDB() async {
     // Get peers
-    final peers = await _getPeers();
+    final peers = await _fetchPeerInfo();
+
+    if (peers.isEmpty) {
+      return;
+    }
+
+    final peerHashes = peers
+        .map(
+          (peer) =>
+          PeerDataHash(
+            dbHash: peer.dbHash,
+            snapshotHash: peer.snapshotHash,
+            uptime: peer.uptime,
+          ),
+    )
+        .toList();
 
     // Decide replication action
-    final action = await _getReplicationStrategy(peers);
+    final action = await _snapshot.getReplicationStrategy(peerHashes);
 
     switch (action) {
     // Get full DB + Snapshot
@@ -280,7 +173,7 @@ class PeerNetDefault implements PeerNet {
         {
           _logger.i("[PeerNet]: Strategy: Full Replication");
 
-          await fetchData();
+          // await fetchData();
           break;
         }
     // Request only chunks from Snapshot
@@ -297,17 +190,5 @@ class PeerNetDefault implements PeerNet {
           _logger.i("[PeerNet]: Strategy: No Replication");
         }
     }
-  }
-
-  @override
-  Future<void> startListening() {
-    // TODO: implement startListening
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<void> fetchData() {
-    // TODO: implement fetchData
-    throw UnimplementedError();
   }
 }
